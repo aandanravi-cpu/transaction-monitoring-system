@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TransactIQ — Login</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#06080f;--card:#111827;--card2:#161f2e;--border:#1e2d42;--border2:#253347;--accent:#00c97a;--danger:#ef4444;--text:#e2e8f0;--muted:#64748b;--dim:#94a3b8}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;display:flex;flex-direction:column}
+.bg-grid{position:fixed;inset:0;background-image:linear-gradient(#1e2d4233 1px,transparent 1px),linear-gradient(90deg,#1e2d4233 1px,transparent 1px);background-size:40px 40px;pointer-events:none}
+header{position:relative;z-index:10;padding:18px 40px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.logo{font-family:'Syne',sans-serif;font-size:20px;font-weight:800}
+.logo span{color:var(--accent)}
+.hbadge{background:#00c97a18;border:1px solid #00c97a33;color:var(--accent);font-size:11px;font-weight:600;padding:4px 12px;border-radius:20px}
+main{flex:1;display:flex;align-items:center;justify-content:center;padding:30px 20px;position:relative;z-index:5}
+.box{width:100%;max-width:420px}
+.tabs{display:flex;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:4px;gap:4px;margin-bottom:22px}
+.tab{flex:1;padding:9px;text-align:center;border-radius:7px;cursor:pointer;font-size:13px;font-weight:600;color:var(--muted);transition:all .2s}
+.tab.on{background:var(--card);color:var(--text)}
+.card{background:var(--card);border:1px solid var(--border2);border-radius:18px;padding:30px 26px;position:relative;overflow:hidden}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent)}
+.ttl{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;margin-bottom:4px}
+.sub{font-size:13px;color:var(--muted);margin-bottom:22px}
+.fg{margin-bottom:14px}
+.fg label{display:block;font-size:11px;font-weight:600;color:var(--dim);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px}
+.fg input,.fg select{width:100%;padding:11px 14px;background:var(--card2);border:1px solid var(--border2);border-radius:10px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;outline:none;transition:border-color .2s}
+.fg input:focus,.fg select:focus{border-color:var(--accent)}
+.fg input::placeholder{color:var(--muted)}
+.fg select option{background:var(--card2)}
+.pw-wrap{position:relative}
+.pw-wrap input{padding-right:42px}
+.eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--muted);font-size:16px;user-select:none}
+.uid-row{display:flex;gap:8px}
+.uid-row input{flex:1}
+.gen-btn{padding:11px 14px;background:#00c97a18;border:1px solid #00c97a44;border-radius:10px;color:var(--accent);font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:'Inter',sans-serif;transition:all .2s}
+.gen-btn:hover{background:var(--accent);color:#000}
+.uid-status{font-size:11px;margin-top:4px}
+.strength-bar{height:3px;background:var(--border2);border-radius:2px;overflow:hidden;margin-top:6px}
+.strength-fill{height:100%;border-radius:2px;transition:width .3s,background .3s;width:0}
+.strength-label{font-size:11px;margin-top:3px;color:var(--muted)}
+.btn{width:100%;padding:12px;background:var(--accent);color:#000;border:none;border-radius:10px;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:6px}
+.btn:hover{opacity:.88}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-sec{background:var(--card2)!important;color:var(--dim)!important;border:1px solid var(--border2)!important}
+.err-box{background:#ef444415;border:1px solid #ef444433;color:#fca5a5;padding:10px 12px;border-radius:8px;font-size:13px;margin-bottom:12px;display:none;align-items:center;gap:8px}
+.err-box.show{display:flex}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid #00000033;border-top-color:#000;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.uid-box{font-family:monospace;font-size:20px;font-weight:700;color:var(--accent);background:#00c97a10;border:1px solid #00c97a33;padding:14px;border-radius:10px;margin:10px 0;letter-spacing:3px;text-align:center}
+.copy-btn{width:100%;padding:8px;background:transparent;border:1px solid var(--border2);border-radius:8px;color:var(--dim);font-family:'Inter',sans-serif;font-size:12px;cursor:pointer;margin-top:4px}
+.sum-box{background:var(--card2);border:1px solid var(--border2);border-radius:10px;padding:14px;margin:14px 0;font-size:13px;line-height:2.2}
+.success-screen{text-align:center}
+footer{padding:14px 40px;border-top:1px solid var(--border);display:flex;justify-content:space-between;font-size:11px;color:var(--muted);position:relative;z-index:5}
+.toast{position:fixed;bottom:20px;right:20px;background:var(--card2);border:1px solid var(--border2);border-radius:10px;padding:10px 16px;font-size:13px;font-weight:600;z-index:9999;opacity:0;transition:all .3s}
+.toast.show{opacity:1}
+.toast.ts{border-color:#00c97a55;color:var(--accent)}
+.toast.te{border-color:#ef444455;color:#fca5a5}
+</style>
+</head>
+<body>
+<div class="bg-grid"></div>
+<header>
+  <div class="logo">Transact<span>IQ</span></div>
+  <div class="hbadge">Secured Login</div>
+</header>
+<main>
+<div class="box">
+  <div class="tabs">
+    <div class="tab on" id="tLogin" onclick="switchTab('login')">Sign In</div>
+    <div class="tab" id="tReg" onclick="switchTab('reg')">Register</div>
+  </div>
+
+  <!-- LOGIN -->
+  <div class="card" id="loginCard">
+    <div class="ttl">Welcome back</div>
+    <div class="sub">Sign in with your User ID and password</div>
+    <div class="err-box" id="lErr"></div>
+    <div class="fg">
+      <label>User ID</label>
+      <input type="text" id="lUid" placeholder="Enter your User ID or username" autocomplete="username">
+    </div>
+    <div class="fg">
+      <label>Password</label>
+      <div class="pw-wrap">
+        <input type="password" id="lPass" placeholder="Enter your password" autocomplete="current-password">
+        <span class="eye" onclick="toggleEye('lPass',this)">&#128065;</span>
+      </div>
+    </div>
+    <div style="margin-bottom:14px">
+      <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:13px;color:var(--dim)">
+        <input type="checkbox" id="remMe" style="accent-color:var(--accent);width:14px;height:14px"> Remember me for 30 days
+      </label>
+    </div>
+    <button class="btn" id="lBtn" onclick="doLogin()">Sign In</button>
+    <div style="text-align:center;font-size:12px;color:var(--muted);margin:14px 0">New user?</div>
+    <button class="btn btn-sec" onclick="switchTab('reg')">Create Account</button>
+  </div>
+
+  <!-- REGISTER -->
+  <div class="card" id="regCard" style="display:none">
+    <div id="rs1">
+      <div class="ttl">Create Account</div>
+      <div class="sub">Fill in your details to register</div>
+      <div class="err-box" id="rErr"></div>
+      <div class="fg">
+        <label>Full Name</label>
+        <input type="text" id="rName" placeholder="e.g. Sunil Kumar">
+      </div>
+      <div class="fg">
+        <label>Email Address</label>
+        <input type="email" id="rEmail" placeholder="yourname@gmail.com">
+      </div>
+      <div class="fg">
+        <label>Business Name</label>
+        <input type="text" id="rBiz" placeholder="e.g. Sunil Enterprises">
+      </div>
+      <!-- User ID auto-assigned by system -->
+      <div class="fg">
+        <label>Password</label>
+        <div class="pw-wrap">
+          <input type="password" id="rPass" placeholder="Min 8 characters" oninput="checkStrength()" autocomplete="new-password">
+          <span class="eye" onclick="toggleEye('rPass',this)">&#128065;</span>
+        </div>
+        <div class="strength-bar"><div class="strength-fill" id="sFill"></div></div>
+        <div class="strength-label" id="sLabel">Enter a password</div>
+      </div>
+      <div class="fg">
+        <label>Confirm Password</label>
+        <div class="pw-wrap">
+          <input type="password" id="rPass2" placeholder="Re-enter password" autocomplete="new-password">
+          <span class="eye" onclick="toggleEye('rPass2',this)">&#128065;</span>
+        </div>
+      </div>
+      <div class="fg" style="display:none">
+        <select id="rRole"><option value="user">Business User</option></select>
+      </div>
+      <button class="btn" id="rBtn" type="button" onclick="doRegister()">Create Account</button>
+      <div style="text-align:center;font-size:12px;color:var(--muted);margin:14px 0">Already registered?</div>
+      <button class="btn btn-sec" type="button" onclick="switchTab('login')">Back to Login</button>
+      <div style="text-align:center;font-size:12px;color:var(--muted);margin-top:16px;padding-top:14px;border-top:1px solid var(--border)">
+        Need Admin access? <a href="/subscription.html" style="color:var(--accent);font-weight:600;text-decoration:none">Subscribe for Admin Plan →</a>
+      </div>
+    </div>
+    <div id="rs2" style="display:none">
+      <div class="success-screen">
+        <div style="font-size:48px;margin-bottom:12px">&#127881;</div>
+        <div class="ttl">Account Created!</div>
+        <div class="sub">Save your User ID — you need it every time you login</div>
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Your User ID</div>
+        <div class="uid-box" id="createdUid">USR-0001</div>
+        <button class="copy-btn" type="button" onclick="copyUid()">Copy User ID</button>
+        <div class="sum-box">
+          <div><b style="color:var(--text)">User ID:</b> <span id="sUid" style="color:var(--accent);font-family:monospace;font-weight:700"></span></div>
+          <div><b style="color:var(--text)">Name:</b> <span id="sName"></span></div>
+          <div><b style="color:var(--text)">Email:</b> <span id="sEmail"></span></div>
+          <div><b style="color:var(--text)">Role:</b> <span id="sRole"></span></div>
+        </div>
+        <button class="btn" type="button" onclick="goLogin()">Login Now</button>
+      </div>
+    </div>
+  </div>
+</div>
+</main>
+<footer>
+  <span>TransactIQ — Transaction Monitoring System</span>
+  <span>BCA Final Year Project</span>
+</footer>
+<div class="toast" id="toastEl"></div>
+
+<script>
+var API = 'http://localhost:5000/api';
+var uidOk = false;
+var uidTimer = null;
+
+function switchTab(t) {
+  var isL = t === 'login';
+  document.getElementById('tLogin').className = 'tab' + (isL ? ' on' : '');
+  document.getElementById('tReg').className = 'tab' + (!isL ? ' on' : '');
+  document.getElementById('loginCard').style.display = isL ? 'block' : 'none';
+  document.getElementById('regCard').style.display = isL ? 'none' : 'block';
+}
+
+function doLogin() {
+  var uid = document.getElementById('lUid').value.trim();
+  var pass = document.getElementById('lPass').value;
+  var errEl = document.getElementById('lErr');
+  errEl.classList.remove('show');
+  if (!uid) { showErr(errEl, 'Please enter your User ID'); return; }
+  if (!pass) { showErr(errEl, 'Please enter your password'); return; }
+  var btn = document.getElementById('lBtn');
+  setLoad(btn, true, 'Signing in...');
+  fetch(API + '/auth/login-password', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username: uid, password: pass })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (!data.success) { throw new Error(data.message || 'Login failed'); }
+    setLoad(btn, false, 'Sign In');
+    var store = document.getElementById('remMe').checked ? localStorage : sessionStorage;
+    store.setItem('tiq_token', data.token);
+    store.setItem('tiq_user', JSON.stringify(data.user));
+    showToast('Welcome ' + (data.user.businessName || data.user.fullName || 'User') + '!', 'ts');
+    setTimeout(function() {
+      window.location.href = data.user.role === 'admin' ? '/admin-dashboard.html' : '/user-dashboard.html';
+    }, 800);
+  })
+  .catch(function(e) {
+    setLoad(btn, false, 'Sign In');
+    showErr(errEl, e.message || 'Login failed. Check your User ID and password.');
+  });
+}
+
+function generateUid() {
+  var biz = document.getElementById('rBiz').value.trim();
+  var name = document.getElementById('rName').value.trim();
+  var base = (biz || name || 'user').toLowerCase().replace(/[^a-z0-9]/g,'_').replace(/_+/g,'_').slice(0,10);
+  var num = Math.floor(100 + Math.random() * 900);
+  document.getElementById('rUid').value = base + '_' + num;
+  checkUid();
+}
+
+function checkUid() {
+  var val = document.getElementById('rUid').value.trim().toLowerCase();
+  var el = document.getElementById('uidStatus');
+  uidOk = false;
+  if (!val) { el.textContent = ''; return; }
+  if (val.length < 3) { el.style.color = '#ef4444'; el.textContent = 'Minimum 3 characters'; return; }
+  if (!/^[a-z0-9_]+$/.test(val)) { el.style.color = '#ef4444'; el.textContent = 'Only letters, numbers and underscore allowed'; return; }
+  el.style.color = 'var(--dim)'; el.textContent = 'Checking...';
+  clearTimeout(uidTimer);
+  uidTimer = setTimeout(function() {
+    fetch(API + '/auth/check-username/' + val)
+    .then(function(r) { return r.json(); })
+    .then(function(res) {
+      if (res.available) { el.style.color = '#00c97a'; el.textContent = 'User ID is available'; uidOk = true; }
+      else { el.style.color = '#ef4444'; el.textContent = 'Already taken — choose another'; }
+    })
+    .catch(function() { el.style.color = 'var(--dim)'; el.textContent = 'Cannot check now — will verify on submit'; uidOk = true; });
+  }, 600);
+}
+
+function checkStrength() {
+  var p = document.getElementById('rPass').value;
+  var fill = document.getElementById('sFill');
+  var lbl = document.getElementById('sLabel');
+  var s = 0;
+  if (p.length >= 8) s++;
+  if (/[A-Z]/.test(p)) s++;
+  if (/[0-9]/.test(p)) s++;
+  if (/[^A-Za-z0-9]/.test(p)) s++;
+  var L = [['0%','transparent','Enter a password'],['25%','#ef4444','Weak'],['50%','#f59e0b','Fair'],['75%','#60a5fa','Good'],['100%','#00c97a','Strong']];
+  fill.style.width = L[s][0]; fill.style.background = L[s][1];
+  lbl.textContent = L[s][2]; lbl.style.color = L[s][1];
+}
+
+function doRegister() {
+  var name = document.getElementById('rName').value.trim();
+  var email = document.getElementById('rEmail').value.trim();
+  var biz = document.getElementById('rBiz').value.trim();
+  var uid = document.getElementById('rUid').value.trim().toLowerCase();
+  var pass = document.getElementById('rPass').value;
+  var pass2 = document.getElementById('rPass2').value;
+  var role = document.getElementById('rRole').value;
+  var errEl = document.getElementById('rErr');
+  errEl.classList.remove('show');
+  if (!name) { showErr(errEl, 'Please enter your full name'); return; }
+  if (!email || !email.includes('@')) { showErr(errEl, 'Please enter a valid email address'); return; }
+  if (!biz) { showErr(errEl, 'Please enter your business name'); return; }
+  // uid auto-generated
+  if (pass.length < 8) { showErr(errEl, 'Password must be at least 8 characters'); return; }
+  if (pass !== pass2) { showErr(errEl, 'Passwords do not match'); return; }
+  var btn = document.getElementById('rBtn');
+  setLoad(btn, true, 'Creating account...');
+  fetch(API + '/auth/register', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ fullName: name, businessName: biz, username: name.toLowerCase().replace(/[^a-z0-9]/g,'_').replace(/_+/g,'_').slice(0,15) + '_' + Math.floor(100+Math.random()*900), email: email, password: pass, role: 'user' })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (!data.success) { throw new Error(data.message || 'Registration failed'); }
+    setLoad(btn, false, 'Create Account');
+    document.getElementById('createdUid').textContent = data.userId;
+    document.getElementById('sUid').textContent = data.userId;
+    document.getElementById('sName').textContent = name;
+    document.getElementById('sEmail').textContent = email;
+    document.getElementById('sRole').textContent = role === 'admin' ? 'Administrator' : 'Business User';
+    document.getElementById('rs1').style.display = 'none';
+    document.getElementById('rs2').style.display = 'block';
+    showToast('Account created successfully!', 'ts');
+  })
+  .catch(function(e) {
+    setLoad(btn, false, 'Create Account');
+    showErr(errEl, e.message || 'Registration failed. Please try again.');
+  });
+}
+
+function copyUid() {
+  var uid = document.getElementById('createdUid').textContent;
+  navigator.clipboard.writeText(uid).then(function() { showToast('User ID copied!', 'ts'); });
+}
+
+function goLogin() {
+  var uid = document.getElementById('createdUid').textContent;
+  document.getElementById('rs1').style.display = 'block';
+  document.getElementById('rs2').style.display = 'none';
+  switchTab('login');
+  document.getElementById('lUid').value = uid;
+  document.getElementById('lPass').value = '';
+  setTimeout(function() { document.getElementById('lPass').focus(); }, 100);
+}
+
+function toggleEye(id, icon) {
+  var el = document.getElementById(id);
+  el.type = el.type === 'password' ? 'text' : 'password';
+  icon.innerHTML = el.type === 'password' ? '&#128065;' : '&#128584;';
+}
+
+function setLoad(btn, loading, label) {
+  btn.disabled = loading;
+  btn.innerHTML = loading ? '<span class="spin"></span> ' + label : label;
+}
+
+function showErr(el, msg) {
+  el.innerHTML = 'Warning: ' + msg;
+  el.classList.add('show');
+  setTimeout(function() { el.classList.remove('show'); }, 5000);
+}
+
+function showToast(msg, cls) {
+  var t = document.getElementById('toastEl');
+  t.textContent = msg;
+  t.className = 'toast ' + (cls||'ts') + ' show';
+  setTimeout(function() { t.className = 'toast'; }, 3000);
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key !== 'Enter') return;
+  if (document.getElementById('loginCard').style.display !== 'none') { doLogin(); }
+  else { doRegister(); }
+});
+</script>
+</body>
+</html>

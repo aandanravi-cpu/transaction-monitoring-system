@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TransactIQ — Admin Subscription</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#06080f;--card:#111827;--card2:#161f2e;--border:#1e2d42;--border2:#253347;--accent:#00c97a;--blue:#3b82f6;--danger:#ef4444;--warn:#f59e0b;--purple:#a78bfa;--text:#e2e8f0;--muted:#64748b;--dim:#94a3b8}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh}
+.bg-grid{position:fixed;inset:0;background-image:linear-gradient(#1e2d4220 1px,transparent 1px),linear-gradient(90deg,#1e2d4220 1px,transparent 1px);background-size:40px 40px;pointer-events:none}
+header{position:relative;z-index:10;padding:18px 40px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.logo{font-family:'Syne',sans-serif;font-size:20px;font-weight:800}
+.logo span{color:var(--accent)}
+.back-link{font-size:13px;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px}
+.back-link:hover{color:var(--text)}
+main{position:relative;z-index:5;padding:40px 20px}
+.hero{text-align:center;margin-bottom:48px}
+.hero h1{font-family:'Syne',sans-serif;font-size:36px;font-weight:800;margin-bottom:10px}
+.hero h1 span{color:var(--accent)}
+.hero p{font-size:15px;color:var(--muted);max-width:500px;margin:0 auto}
+/* TOGGLE */
+.toggle-wrap{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:40px}
+.toggle-label{font-size:14px;font-weight:600;color:var(--dim)}
+.toggle-label.active{color:var(--text)}
+.toggle-track{width:52px;height:28px;background:var(--accent);border-radius:20px;cursor:pointer;position:relative;transition:background .2s}
+.toggle-thumb{width:22px;height:22px;background:#fff;border-radius:50%;position:absolute;top:3px;left:3px;transition:transform .2s}
+.toggle-track.yearly .toggle-thumb{transform:translateX(24px)}
+.save-badge{background:#00c97a22;border:1px solid #00c97a44;color:var(--accent);font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px}
+/* PLANS */
+.plans{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;max-width:960px;margin:0 auto 48px}
+.plan{background:var(--card);border:1px solid var(--border2);border-radius:18px;padding:28px 24px;position:relative;cursor:pointer;transition:all .2s}
+.plan:hover{border-color:var(--border);transform:translateY(-2px)}
+.plan.popular{border-color:var(--accent);background:linear-gradient(180deg,#00c97a0a 0%,var(--card) 100%)}
+.plan.selected{border-color:var(--accent);box-shadow:0 0 0 2px #00c97a33}
+.popular-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--accent);color:#000;font-size:11px;font-weight:800;padding:4px 14px;border-radius:20px;white-space:nowrap}
+.plan-name{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;margin-bottom:6px}
+.plan-desc{font-size:12px;color:var(--muted);margin-bottom:20px;line-height:1.5}
+.plan-price{margin-bottom:20px}
+.plan-price .amount{font-family:'Syne',sans-serif;font-size:36px;font-weight:800}
+.plan-price .period{font-size:13px;color:var(--muted)}
+.plan-price .original{font-size:13px;color:var(--muted);text-decoration:line-through;margin-left:8px}
+.plan-features{list-style:none;display:flex;flex-direction:column;gap:8px;margin-bottom:24px}
+.plan-features li{font-size:13px;color:var(--dim);display:flex;align-items:center;gap:8px}
+.plan-features li::before{content:'✓';color:var(--accent);font-weight:700;flex-shrink:0}
+.plan-features li.no::before{content:'✗';color:var(--danger)}
+.plan-features li.no{color:var(--muted)}
+.select-btn{width:100%;padding:11px;border-radius:10px;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;border:1px solid var(--border2);background:var(--card2);color:var(--text)}
+.plan.popular .select-btn{background:var(--accent);color:#000;border-color:var(--accent)}
+.plan.selected .select-btn{background:var(--accent);color:#000;border-color:var(--accent)}
+/* PAYMENT MODAL */
+.modal-bg{display:none;position:fixed;inset:0;background:#00000088;z-index:1000;align-items:center;justify-content:center;padding:20px}
+.modal-bg.open{display:flex}
+.modal{background:var(--card);border:1px solid var(--border2);border-radius:20px;padding:28px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto}
+.modal h2{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;margin-bottom:4px}
+.modal-sub{font-size:13px;color:var(--muted);margin-bottom:22px}
+/* STEPS */
+.step-bar{display:flex;gap:0;margin-bottom:24px}
+.step-item{flex:1;text-align:center;position:relative}
+.step-item::after{content:'';position:absolute;top:13px;left:50%;width:100%;height:1px;background:var(--border2);z-index:0}
+.step-item:last-child::after{display:none}
+.step-dot{width:26px;height:26px;border-radius:50%;border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--muted);background:var(--card2);margin:0 auto 4px;position:relative;z-index:1;transition:all .3s}
+.step-dot.done{border-color:var(--accent);background:var(--accent);color:#000}
+.step-dot.cur{border-color:var(--accent);color:var(--accent)}
+.step-lbl{font-size:10px;color:var(--muted)}
+/* FORM */
+.fg{margin-bottom:14px}
+.fg label{display:block;font-size:11px;font-weight:600;color:var(--dim);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px}
+.fg input,.fg select{width:100%;padding:10px 12px;background:var(--card2);border:1px solid var(--border2);border-radius:10px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;outline:none;transition:border-color .2s}
+.fg input:focus,.fg select:focus{border-color:var(--accent)}
+.fg input::placeholder{color:var(--muted)}
+.pw-wrap{position:relative}
+.pw-wrap input{padding-right:40px}
+.eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--muted);font-size:15px;user-select:none}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+/* UPI QR */
+.upi-box{background:var(--card2);border:1px solid var(--border2);border-radius:12px;padding:20px;text-align:center;margin-bottom:16px}
+.qr-placeholder{width:150px;height:150px;background:#fff;border-radius:8px;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.qr-grid{display:grid;grid-template-columns:repeat(10,1fr);gap:1px;width:100%;height:100%;padding:8px}
+.qr-cell{background:#000;border-radius:1px}
+.qr-cell.w{background:#fff}
+.upi-id{font-family:monospace;font-size:13px;color:var(--accent);margin-bottom:4px}
+.upi-amount{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:var(--text)}
+/* ORDER SUMMARY */
+.summary-box{background:var(--card2);border:1px solid var(--border2);border-radius:10px;padding:14px;margin-bottom:16px;font-size:13px}
+.sum-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border)}
+.sum-row:last-child{border-bottom:none;font-weight:700;font-size:14px;padding-top:8px}
+/* STRENGTH */
+.strength-bar{height:3px;background:var(--border2);border-radius:2px;overflow:hidden;margin-top:6px}
+.strength-fill{height:100%;border-radius:2px;transition:width .3s,background .3s;width:0}
+.strength-label{font-size:11px;margin-top:3px;color:var(--muted)}
+/* BUTTONS */
+.btn{width:100%;padding:12px;background:var(--accent);color:#000;border:none;border-radius:10px;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:6px}
+.btn:hover{opacity:.88}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-sec{background:var(--card2)!important;color:var(--dim)!important;border:1px solid var(--border2)!important}
+.err-box{background:#ef444415;border:1px solid #ef444433;color:#fca5a5;padding:10px 12px;border-radius:8px;font-size:13px;margin-bottom:12px;display:none;align-items:center;gap:8px}
+.err-box.show{display:flex}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid #00000033;border-top-color:#000;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* SUCCESS */
+.success-screen{text-align:center;padding:10px 0}
+.big-icon{font-size:52px;margin-bottom:12px}
+.uid-box{font-family:monospace;font-size:20px;font-weight:700;color:var(--accent);background:#00c97a10;border:1px solid #00c97a33;padding:14px;border-radius:10px;margin:10px 0;letter-spacing:3px}
+.toast{position:fixed;bottom:20px;right:20px;background:var(--card2);border:1px solid var(--border2);border-radius:10px;padding:10px 16px;font-size:13px;font-weight:600;z-index:9999;opacity:0;transition:all .3s}
+.toast.show{opacity:1}
+.toast.ts{border-color:#00c97a55;color:var(--accent)}
+.toast.te{border-color:#ef444455;color:#fca5a5}
+@media(max-width:768px){.plans{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="bg-grid"></div>
+<header>
+  <div class="logo">Transact<span>IQ</span></div>
+  <span class="back-link" onclick="window.location.href='/TransactIQ_Login_Simple.html'">← Back to Login</span>
+</header>
+
+<main>
+  <div class="hero">
+    <h1>Choose Your <span>Admin Plan</span></h1>
+    <p>Get full admin access to manage users, view all transactions, approve accounts and monitor fraud alerts</p>
+  </div>
+
+  <!-- BILLING TOGGLE -->
+  <div class="toggle-wrap">
+    <span class="toggle-label active" id="lblMonthly">Monthly</span>
+    <div class="toggle-track" id="billingToggle" onclick="toggleBilling()">
+      <div class="toggle-thumb"></div>
+    </div>
+    <span class="toggle-label" id="lblYearly">Yearly</span>
+    <span class="save-badge" id="saveBadge" style="display:none">Save 30%</span>
+  </div>
+
+  <!-- PLANS -->
+  <div class="plans">
+    <!-- STARTER -->
+    <div class="plan" id="plan-starter" onclick="selectPlan('starter')">
+      <div class="plan-name">Starter</div>
+      <div class="plan-desc">Perfect for small shops with basic monitoring needs</div>
+      <div class="plan-price">
+        <span class="amount" id="price-starter">₹299</span>
+        <span class="period" id="period-starter">/month</span>
+        <span class="original" id="orig-starter" style="display:none">₹428</span>
+      </div>
+      <ul class="plan-features">
+        <li>Admin dashboard access</li>
+        <li>Manage up to 10 users</li>
+        <li>Fraud detection alerts</li>
+        <li>Basic reports</li>
+        <li class="no">Advanced analytics</li>
+        <li class="no">Priority support</li>
+      </ul>
+      <button class="select-btn">Select Starter</button>
+    </div>
+
+    <!-- BUSINESS (popular) -->
+    <div class="plan popular" id="plan-business" onclick="selectPlan('business')">
+      <div class="popular-badge">Most Popular</div>
+      <div class="plan-name">Business</div>
+      <div class="plan-desc">Best for growing businesses with multiple users</div>
+      <div class="plan-price">
+        <span class="amount" id="price-business">₹599</span>
+        <span class="period" id="period-business">/month</span>
+        <span class="original" id="orig-business" style="display:none">₹856</span>
+      </div>
+      <ul class="plan-features">
+        <li>Admin dashboard access</li>
+        <li>Manage up to 50 users</li>
+        <li>Fraud detection alerts</li>
+        <li>Advanced analytics</li>
+        <li>Excel & PDF exports</li>
+        <li class="no">Priority support</li>
+      </ul>
+      <button class="select-btn">Select Business</button>
+    </div>
+
+    <!-- ENTERPRISE -->
+    <div class="plan" id="plan-enterprise" onclick="selectPlan('enterprise')">
+      <div class="plan-name">Enterprise</div>
+      <div class="plan-desc">For large businesses needing full control and support</div>
+      <div class="plan-price">
+        <span class="amount" id="price-enterprise">₹999</span>
+        <span class="period" id="period-enterprise">/month</span>
+        <span class="original" id="orig-enterprise" style="display:none">₹1428</span>
+      </div>
+      <ul class="plan-features">
+        <li>Admin dashboard access</li>
+        <li>Unlimited users</li>
+        <li>Fraud detection alerts</li>
+        <li>Advanced analytics</li>
+        <li>Excel & PDF exports</li>
+        <li>Priority support</li>
+      </ul>
+      <button class="select-btn">Select Enterprise</button>
+    </div>
+  </div>
+</main>
+
+<!-- PAYMENT MODAL -->
+<div class="modal-bg" id="payModal">
+  <div class="modal">
+
+    <!-- STEP INDICATOR -->
+    <div class="step-bar">
+      <div class="step-item"><div class="step-dot cur" id="sd1">1</div><div class="step-lbl">Details</div></div>
+      <div class="step-item"><div class="step-dot" id="sd2">2</div><div class="step-lbl">Payment</div></div>
+      <div class="step-item"><div class="step-dot" id="sd3">3</div><div class="step-lbl">Done</div></div>
+    </div>
+
+    <!-- STEP 1: Account Details -->
+    <div id="ms1">
+      <h2>Create Admin Account</h2>
+      <div class="modal-sub" id="planLabel">Business Plan — ₹599/month</div>
+      <div class="err-box" id="ms1Err"></div>
+      <div class="fg"><label>Full Name</label><input type="text" id="aName" placeholder="e.g. Ravi Andon"></div>
+      <div class="fg"><label>Business Name</label><input type="text" id="aBiz" placeholder="e.g. Ravi Enterprises"></div>
+      <div class="fg"><label>Email Address</label><input type="email" id="aEmail" placeholder="yourname@gmail.com"></div>
+      <div class="fg"><label>Mobile Number</label><input type="tel" id="aMobile" placeholder="10-digit mobile" maxlength="10"></div>
+      <div class="fg"><label>Username</label><input type="text" id="aUsername" placeholder="e.g. raviadmin" oninput="checkAdminUser()"></div>
+      <div id="adminUserStatus" style="font-size:11px;margin-top:-10px;margin-bottom:10px"></div>
+      <div class="fg"><label>Password</label>
+        <div class="pw-wrap"><input type="password" id="aPass" placeholder="Min 8 characters" oninput="checkPassStr()">
+        <span class="eye" onclick="toggleEye('aPass',this)">&#128065;</span></div>
+        <div class="strength-bar"><div class="strength-fill" id="asFill"></div></div>
+        <div class="strength-label" id="asLabel">Enter a password</div>
+      </div>
+      <div class="fg"><label>Confirm Password</label>
+        <div class="pw-wrap"><input type="password" id="aPass2" placeholder="Re-enter password">
+        <span class="eye" onclick="toggleEye('aPass2',this)">&#128065;</span></div>
+      </div>
+      <button class="btn" onclick="goStep2()">Continue to Payment →</button>
+      <button class="btn btn-sec" onclick="closeModal()" style="margin-top:10px">Cancel</button>
+    </div>
+
+    <!-- STEP 2: UPI Payment -->
+    <div id="ms2" style="display:none">
+      <h2>Complete Payment</h2>
+      <div class="modal-sub">Scan QR or pay to UPI ID below</div>
+      <div class="err-box" id="ms2Err"></div>
+
+      <div class="summary-box">
+        <div class="sum-row"><span style="color:var(--muted)">Plan</span><span id="sumPlan">Business</span></div>
+        <div class="sum-row"><span style="color:var(--muted)">Billing</span><span id="sumBilling">Monthly</span></div>
+        <div class="sum-row"><span style="color:var(--muted)">Amount</span><span id="sumAmount" style="color:var(--accent)">₹599</span></div>
+      </div>
+
+      <div class="upi-box">
+        <div class="qr-placeholder" id="qrBox"></div>
+        <div class="upi-id">transactiq@upi</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:8px">Pay exactly</div>
+        <div class="upi-amount" id="upiAmount">₹599</div>
+      </div>
+
+      <div class="fg"><label>Enter UPI Transaction ID (UTR)</label>
+        <input type="text" id="utrId" placeholder="Enter UTR number from your UPI app after payment"></div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.6">
+        After paying, open your UPI app → Transaction History → copy the UTR/Reference number and enter above.
+      </div>
+      <button class="btn" id="verifyPayBtn" onclick="verifyPayment()">Verify Payment & Activate</button>
+      <button class="btn btn-sec" onclick="backToStep1()" style="margin-top:10px">← Back</button>
+    </div>
+
+    <!-- STEP 3: Success -->
+    <div id="ms3" style="display:none">
+      <div class="success-screen">
+        <div class="big-icon">&#127881;</div>
+        <h2 style="margin-bottom:6px">Admin Account Created!</h2>
+        <div class="modal-sub" style="margin-bottom:16px">Your admin account is ready. Save your details below.</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:1px">Your User ID</div>
+        <div class="uid-box" id="createdAdminUid">USR-0001</div>
+        <div style="background:var(--card2);border:1px solid var(--border2);border-radius:10px;padding:14px;margin:14px 0;text-align:left;font-size:13px;line-height:2.2">
+          <div><b style="color:var(--text)">Username:</b> <span id="doneUsername" style="color:var(--accent)"></span></div>
+          <div><b style="color:var(--text)">Plan:</b> <span id="donePlan"></span></div>
+          <div><b style="color:var(--text)">Email:</b> <span id="doneEmail"></span></div>
+        </div>
+        <button class="btn" onclick="goToLogin()">Go to Login →</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toastEl"></div>
+
+<script>
+var API = 'http://localhost:5000/api';
+var billing = 'monthly';
+var selectedPlan = null;
+var adminUserOk = false;
+var adminUserTimer = null;
+
+var prices = {
+  monthly: { starter: 299, business: 599, enterprise: 999 },
+  yearly:  { starter: 2514, business: 5030, enterprise: 8390 }
+};
+var origPrices = {
+  starter: 428, business: 856, enterprise: 1428
+};
+
+function toggleBilling() {
+  billing = billing === 'monthly' ? 'yearly' : 'monthly';
+  var el = document.getElementById('billingToggle');
+  el.classList.toggle('yearly', billing === 'yearly');
+  document.getElementById('lblMonthly').classList.toggle('active', billing === 'monthly');
+  document.getElementById('lblYearly').classList.toggle('active', billing === 'yearly');
+  document.getElementById('saveBadge').style.display = billing === 'yearly' ? 'inline' : 'none';
+  updatePrices();
+}
+
+function updatePrices() {
+  ['starter','business','enterprise'].forEach(function(p) {
+    var priceEl = document.getElementById('price-' + p);
+    var origEl = document.getElementById('orig-' + p);
+    var periodEl = document.getElementById('period-' + p);
+    priceEl.textContent = '₹' + prices[billing][p].toLocaleString('en-IN');
+    periodEl.textContent = billing === 'monthly' ? '/month' : '/year';
+    if (billing === 'yearly') {
+      origEl.style.display = 'inline';
+      origEl.textContent = '₹' + (origPrices[p] * 12).toLocaleString('en-IN');
+    } else {
+      origEl.style.display = 'none';
+    }
+  });
+}
+
+function selectPlan(plan) {
+  selectedPlan = plan;
+  document.querySelectorAll('.plan').forEach(function(p){ p.classList.remove('selected'); });
+  document.getElementById('plan-' + plan).classList.add('selected');
+  var planNames = { starter: 'Starter', business: 'Business', enterprise: 'Enterprise' };
+  var price = prices[billing][plan];
+  document.getElementById('planLabel').textContent = planNames[plan] + ' Plan — ₹' + price.toLocaleString('en-IN') + (billing === 'monthly' ? '/month' : '/year');
+  document.getElementById('sumPlan').textContent = planNames[plan];
+  document.getElementById('sumBilling').textContent = billing === 'monthly' ? 'Monthly' : 'Yearly';
+  document.getElementById('sumAmount').textContent = '₹' + price.toLocaleString('en-IN');
+  document.getElementById('upiAmount').textContent = '₹' + price.toLocaleString('en-IN');
+  generateQR(price);
+  goModalStep(1);
+  document.getElementById('payModal').classList.add('open');
+}
+
+function generateQR(amount) {
+  var box = document.getElementById('qrBox');
+  var pattern = [];
+  var seed = amount + 12345;
+  for (var i = 0; i < 100; i++) {
+    seed = (seed * 1664525 + 1013904223) & 0xffffffff;
+    pattern.push(Math.abs(seed) % 3 !== 0);
+  }
+  // Fixed corners for QR look
+  var fixedWhite = [1,2,3,4,5,6,7,8,10,17,20,27,30,37,40,47,50,57,60,67,70,77,80,87,90,91,92,93,94,95,96,97,98,99];
+  var html = '';
+  for (var j = 0; j < 100; j++) {
+    var isWhite = fixedWhite.indexOf(j) > -1 ? true : !pattern[j];
+    html += '<div class="qr-cell ' + (isWhite ? 'w' : '') + '"></div>';
+  }
+  box.innerHTML = html;
+}
+
+function checkAdminUser() {
+  var val = document.getElementById('aUsername').value.trim().toLowerCase();
+  var el = document.getElementById('adminUserStatus');
+  adminUserOk = false;
+  if (!val) { el.textContent = ''; return; }
+  if (val.length < 3) { el.style.color = '#ef4444'; el.textContent = 'Minimum 3 characters'; return; }
+  if (!/^[a-z0-9_]+$/.test(val)) { el.style.color = '#ef4444'; el.textContent = 'Only letters, numbers and underscore'; return; }
+  el.style.color = 'var(--dim)'; el.textContent = 'Checking...';
+  clearTimeout(adminUserTimer);
+  adminUserTimer = setTimeout(function() {
+    fetch(API + '/auth/check-username/' + val)
+    .then(function(r){ return r.json(); })
+    .then(function(res) {
+      if (res.available) { el.style.color = '#00c97a'; el.textContent = 'Username available'; adminUserOk = true; }
+      else { el.style.color = '#ef4444'; el.textContent = 'Already taken — choose another'; }
+    })
+    .catch(function(){ el.style.color = 'var(--dim)'; el.textContent = 'Cannot check now'; adminUserOk = true; });
+  }, 600);
+}
+
+function checkPassStr() {
+  var p = document.getElementById('aPass').value;
+  var fill = document.getElementById('asFill');
+  var lbl = document.getElementById('asLabel');
+  var s = 0;
+  if (p.length >= 8) s++; if (/[A-Z]/.test(p)) s++; if (/[0-9]/.test(p)) s++; if (/[^A-Za-z0-9]/.test(p)) s++;
+  var L = [['0%','transparent','Enter a password'],['25%','#ef4444','Weak'],['50%','#f59e0b','Fair'],['75%','#60a5fa','Good'],['100%','#00c97a','Strong']];
+  fill.style.width = L[s][0]; fill.style.background = L[s][1];
+  lbl.textContent = L[s][2]; lbl.style.color = L[s][1];
+}
+
+function goStep2() {
+  var name = document.getElementById('aName').value.trim();
+  var biz = document.getElementById('aBiz').value.trim();
+  var email = document.getElementById('aEmail').value.trim();
+  var mobile = document.getElementById('aMobile').value.trim();
+  var username = document.getElementById('aUsername').value.trim();
+  var pass = document.getElementById('aPass').value;
+  var pass2 = document.getElementById('aPass2').value;
+  var errEl = document.getElementById('ms1Err');
+  errEl.classList.remove('show');
+  if (!name) { showErr(errEl, 'Please enter your full name'); return; }
+  if (!biz) { showErr(errEl, 'Please enter your business name'); return; }
+  if (!email || !email.includes('@')) { showErr(errEl, 'Please enter a valid email'); return; }
+  if (!mobile || mobile.length !== 10) { showErr(errEl, 'Please enter valid 10-digit mobile'); return; }
+  if (!username || username.length < 3) { showErr(errEl, 'Please enter a valid username'); return; }
+  if (!adminUserOk) { showErr(errEl, 'Please wait for username check'); return; }
+  if (pass.length < 8) { showErr(errEl, 'Password must be at least 8 characters'); return; }
+  if (pass !== pass2) { showErr(errEl, 'Passwords do not match'); return; }
+  goModalStep(2);
+}
+
+function verifyPayment() {
+  var utr = document.getElementById('utrId').value.trim();
+  var errEl = document.getElementById('ms2Err');
+  errEl.classList.remove('show');
+  if (!utr || utr.length < 6) { showErr(errEl, 'Please enter a valid UTR / Transaction ID from your UPI app'); return; }
+
+  var btn = document.getElementById('verifyPayBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin"></span> Verifying payment...';
+
+  // Simulate payment verification (2 seconds)
+  setTimeout(function() {
+    // Register admin account
+    var name = document.getElementById('aName').value.trim();
+    var biz = document.getElementById('aBiz').value.trim();
+    var email = document.getElementById('aEmail').value.trim();
+    var mobile = document.getElementById('aMobile').value.trim();
+    var username = document.getElementById('aUsername').value.trim().toLowerCase();
+    var pass = document.getElementById('aPass').value;
+
+    fetch(API + '/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fullName: name, businessName: biz, username: username, email: email, mobile: mobile, password: pass, role: 'admin' })
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(data) {
+      btn.disabled = false;
+      btn.innerHTML = 'Verify Payment & Activate';
+      if (!data.success) { showErr(errEl, data.message || 'Registration failed'); return; }
+      document.getElementById('createdAdminUid').textContent = data.userId;
+      document.getElementById('doneUsername').textContent = username;
+      document.getElementById('donePlan').textContent = document.getElementById('sumPlan').textContent + ' — ' + document.getElementById('sumBilling').textContent;
+      document.getElementById('doneEmail').textContent = email;
+      goModalStep(3);
+      showToast('Admin account activated!', 'ts');
+    })
+    .catch(function(e) {
+      btn.disabled = false;
+      btn.innerHTML = 'Verify Payment & Activate';
+      showErr(errEl, 'Server error. Make sure npm start is running.');
+    });
+  }, 2000);
+}
+
+function goModalStep(n) {
+  ['ms1','ms2','ms3'].forEach(function(s,i){ document.getElementById(s).style.display = (i+1===n)?'block':'none'; });
+  for (var i = 1; i <= 3; i++) {
+    var d = document.getElementById('sd' + i);
+    d.className = 'step-dot' + (i < n ? ' done' : i === n ? ' cur' : '');
+    d.textContent = i < n ? '✓' : i;
+  }
+}
+
+function backToStep1() { goModalStep(1); }
+function closeModal() { document.getElementById('payModal').classList.remove('open'); }
+function goToLogin() { window.location.href = '/TransactIQ_Login_Simple.html'; }
+
+function toggleEye(id, icon) {
+  var el = document.getElementById(id);
+  el.type = el.type === 'password' ? 'text' : 'password';
+  icon.innerHTML = el.type === 'password' ? '&#128065;' : '&#128584;';
+}
+function showErr(el, msg) { el.innerHTML = '&#9888; ' + msg; el.classList.add('show'); setTimeout(function(){ el.classList.remove('show'); }, 5000); }
+function showToast(msg, cls) {
+  var t = document.getElementById('toastEl');
+  t.textContent = msg; t.className = 'toast ' + (cls||'ts') + ' show';
+  setTimeout(function(){ t.className = 'toast'; }, 3000);
+}
+
+document.addEventListener('click', function(e) {
+  if (e.target.classList.contains('modal-bg')) closeModal();
+});
+</script>
+</body>
+</html>
