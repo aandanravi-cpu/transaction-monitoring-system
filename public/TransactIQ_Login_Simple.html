@@ -116,7 +116,7 @@ footer{padding:14px 40px;border-top:1px solid var(--border);display:flex;justify
         <label>Business Name</label>
         <input type="text" id="rBiz" placeholder="e.g. Sunil Enterprises">
       </div>
-      <!-- User ID auto-assigned by system -->
+      <input type="hidden" id="rUid" value="user_001">
       <div class="fg">
         <label>Password</label>
         <div class="pw-wrap">
@@ -171,7 +171,7 @@ footer{padding:14px 40px;border-top:1px solid var(--border);display:flex;justify
 
 <script>
 var API = 'http://localhost:5000/api';
-var uidOk = false;
+var uidOk = true;
 var uidTimer = null;
 
 function switchTab(t) {
@@ -226,7 +226,7 @@ function generateUid() {
 function checkUid() {
   var val = document.getElementById('rUid').value.trim().toLowerCase();
   var el = document.getElementById('uidStatus');
-  uidOk = false;
+  uidOk = true;
   if (!val) { el.textContent = ''; return; }
   if (val.length < 3) { el.style.color = '#ef4444'; el.textContent = 'Minimum 3 characters'; return; }
   if (!/^[a-z0-9_]+$/.test(val)) { el.style.color = '#ef4444'; el.textContent = 'Only letters, numbers and underscore allowed'; return; }

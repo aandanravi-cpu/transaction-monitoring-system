@@ -59,14 +59,14 @@ exports.loginWithPassword = async (req, res) => {
     if (!isMatch) {
       const fails = (user.failed_login_attempts || 0) + 1;
       const lockUntil = fails >= 5 ? new Date(Date.now() + 5 * 60000) : null;
-      await conn.query('UPDATE users SET failed_login_attempts=?, locked_until=? WHERE id=?', [fails, lockUntil, user.id]);
+      await conn.query('UPDATE users SET failed_login_attempts=?, locked_until=? WHERE user_uid=?', [fails, lockUntil, user.user_uid]);
       const left = Math.max(0, 5 - fails);
       return res.status(401).json({ success: false, message: `Wrong password. ${left} attempt(s) remaining.` });
     }
 
     // Success
-    await conn.query('UPDATE users SET failed_login_attempts=0, locked_until=NULL, last_login=NOW() WHERE id=?', [user.id]);
-    const token = generateToken(user.id, user.role);
+    await conn.query('UPDATE users SET failed_login_attempts=0, locked_until=NULL, last_login=NOW() WHERE user_uid=?', [user.user_uid]);
+    const token = generateToken(user.user_uid, user.role);
 
     res.json({
       success: true,
@@ -102,14 +102,14 @@ exports.register = async (req, res) => {
   const conn = await pool.getConnection();
   try {
     // Check if username already exists
-    const [existing] = await conn.query('SELECT id FROM users WHERE username = ?', [username]);
+    const [existing] = await conn.query('SELECT user_uid FROM users WHERE username = ?', [username]);
     if (existing.length) {
       return res.status(409).json({ success: false, message: 'User ID already taken. Please choose another.' });
     }
 
     // Check email if provided
     if (email) {
-      const [emailCheck] = await conn.query('SELECT id FROM users WHERE email = ?', [email]);
+      const [emailCheck] = await conn.query('SELECT user_uid FROM users WHERE email = ?', [email]);
       if (emailCheck.length) {
         return res.status(409).json({ success: false, message: 'Email already registered.' });
       }
@@ -150,7 +150,7 @@ exports.checkUsername = async (req, res) => {
     return res.json({ available: false, message: 'Minimum 3 characters' });
   }
   try {
-    const [rows] = await pool.query('SELECT id FROM users WHERE username = ?', [username]);
+    const [rows] = await pool.query('SELECT user_uid FROM users WHERE username = ?', [username]);
     res.json({ available: rows.length === 0, message: rows.length === 0 ? 'User ID available' : 'User ID already taken' });
   } catch (err) {
     res.json({ available: true, message: 'Could not check' });
