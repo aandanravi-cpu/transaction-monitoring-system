@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TransactIQ — Transaction Monitoring System</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{
+  --bg:#0b0e17;--surf:#131825;--surf2:#181f2e;--surf3:#1e2738;--border:#232e42;--border2:#2d3d56;
+  --accent:#00d68f;--accent2:#0070f3;--danger:#f5315d;--warn:#f0a500;--purple:#7c5cfc;
+  --text:#dde3f0;--muted:#5a6a87;--dim:#8494b0;
+  --cr:#00d68f;--db:#f5315d;--pd:#f0a500;--tr:#0070f3;
+  --rad:10px;--rad2:14px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;font-size:14px;min-height:100vh}
+/* LAYOUT */
+.app{display:flex;min-height:100vh}
+.sidebar{width:220px;background:var(--surf);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto}
+.main{flex:1;min-width:0;overflow-x:hidden}
+/* SIDEBAR */
+.s-logo{padding:20px 18px 16px;border-bottom:1px solid var(--border)}
+.s-logo h1{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--text)}
+.s-logo h1 span{color:var(--accent)}
+.s-logo p{font-size:11px;color:var(--muted);margin-top:2px}
+.s-user{padding:12px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+.av-green{background:#00d68f22;color:var(--accent)}
+.av-blue{background:#0070f322;color:var(--accent2)}
+.u-name{font-size:13px;font-weight:700;line-height:1.2}
+.u-role{font-size:11px;color:var(--muted)}
+.s-nav{padding:10px 10px;flex:1}
+.nav-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;padding:8px 8px 4px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;color:var(--dim);margin-bottom:2px;transition:all .15s}
+.nav-item:hover{background:var(--surf2);color:var(--text)}
+.nav-item.active{background:var(--accent)14;color:var(--accent)}
+.nav-item .ni{width:18px;text-align:center;font-size:14px}
+.fraud-badge{margin-left:auto;background:var(--danger);color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:20px}
+/* TOP BAR */
+.topbar{background:var(--surf);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;gap:12px}
+.topbar h2{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;flex:1}
+.btn{padding:7px 14px;border-radius:8px;border:1px solid var(--border2);background:var(--surf2);color:var(--text);font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{background:var(--surf3);border-color:var(--dim)}
+.btn-accent{background:var(--accent)!important;color:#000!important;border-color:var(--accent)!important}
+.btn-accent:hover{opacity:.88}
+.btn-danger{background:var(--danger)!important;color:#fff!important;border-color:var(--danger)!important}
+/* PAGES */
+.page{display:none;padding:20px 24px}
+.page.active{display:block}
+/* STAT CARDS */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.stat-card{background:var(--surf);border:1px solid var(--border);border-radius:var(--rad2);padding:16px;position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:3px 0 0 3px}
+.sc-green::before{background:var(--cr)}
+.sc-red::before{background:var(--db)}
+.sc-amber::before{background:var(--pd)}
+.sc-blue::before{background:var(--tr)}
+.sc-purple::before{background:var(--purple)}
+.stat-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px}
+.stat-val{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;line-height:1}
+.stat-sub{font-size:11px;color:var(--muted);margin-top:4px}
+/* TABLE */
+.table-wrap{background:var(--surf);border:1px solid var(--border);border-radius:var(--rad2);overflow:hidden}
+.table-head{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.table-head h3{font-size:14px;font-weight:700;flex:1;min-width:120px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead tr{background:var(--surf2)}
+th{padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;white-space:nowrap}
+td{padding:10px 14px;border-top:1px solid var(--border);vertical-align:middle}
+tr:hover td{background:var(--surf2)14}
+.badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700}
+.b-green{background:#00d68f18;color:#00d68f}
+.b-red{background:#f5315d18;color:#f5315d}
+.b-amber{background:#f0a50018;color:#f0a500}
+.b-blue{background:#0070f318;color:#0070f3}
+.b-purple{background:#7c5cfc18;color:#7c5cfc}
+.b-gray{background:#5a6a8718;color:#8494b0}
+.fraud-flag{background:#f5315d22;color:#f5315d;border:1px solid #f5315d44;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700;display:inline-flex;align-items:center;gap:4px}
+.pending-flag{background:#f0a50022;color:#f0a500;border:1px solid #f0a50044;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700}
+/* FORM */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-grid.g3{grid-template-columns:1fr 1fr 1fr}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-group label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.7px}
+.form-group input,.form-group select,.form-group textarea{
+  background:var(--surf2);border:1px solid var(--border2);border-radius:8px;
+  color:var(--text);font-family:'Nunito',sans-serif;font-size:13px;
+  padding:9px 12px;outline:none;transition:border-color .15s;width:100%
+}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--accent)}
+.form-group select option{background:var(--surf2)}
+.form-section{background:var(--surf);border:1px solid var(--border);border-radius:var(--rad2);padding:18px;margin-bottom:16px}
+.form-section h3{font-size:13px;font-weight:700;color:var(--dim);margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.full-span{grid-column:1/-1}
+/* FILTER BAR */
+.filter-bar{background:var(--surf);border:1px solid var(--border);border-radius:var(--rad2);padding:14px 18px;margin-bottom:16px}
+.filter-bar h3{font-size:13px;font-weight:700;margin-bottom:12px;color:var(--dim)}
+.filter-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;align-items:end}
+/* CALC PANEL */
+.calc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+.calc-card{background:var(--surf);border:1px solid var(--border);border-radius:var(--rad2);padding:16px}
+.calc-card h4{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px}
+.calc-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px}
+.calc-row:last-child{border-bottom:none}
+.calc-total{display:flex;justify-content:space-between;padding:8px 0 0;font-size:14px;font-weight:700}
+/* APPROVAL */
+.approval-card{background:var(--surf);border:1px solid var(--border);border-radius:var(--rad2);padding:16px;margin-bottom:10px;display:flex;align-items:center;gap:14px}
+.approval-info{flex:1}
+.approval-info h4{font-size:13px;font-weight:700;margin-bottom:3px}
+.approval-info p{font-size:12px;color:var(--muted)}
+/* PARTY */
+.party-card{background:var(--surf);border:1px solid var(--border);border-radius:var(--rad2);padding:14px;display:flex;align-items:center;gap:12px}
+.party-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+/* FRAUD */
+.fraud-card{background:#f5315d0c;border:1px solid #f5315d33;border-radius:var(--rad2);padding:16px;margin-bottom:10px}
+.fraud-card h4{font-size:13px;font-weight:700;color:var(--danger);margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.fraud-card p{font-size:12px;color:var(--dim)}
+/* LOGIN */
+#loginPage{display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--bg)}
+.login-box{background:var(--surf);border:1px solid var(--border);border-radius:18px;padding:40px;width:400px}
+.login-box h1{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;margin-bottom:4px}
+.login-box h1 span{color:var(--accent)}
+.login-box p{font-size:13px;color:var(--muted);margin-bottom:28px}
+/* IMPORT */
+.import-zone{border:2px dashed var(--border2);border-radius:var(--rad2);padding:28px;text-align:center;cursor:pointer;transition:border-color .15s;margin-bottom:14px}
+.import-zone:hover{border-color:var(--accent)}
+.import-zone p{color:var(--muted);font-size:13px;margin-top:6px}
+/* COPY BTN */
+.copy-btn{background:transparent;border:1px solid var(--border2);border-radius:6px;color:var(--dim);padding:4px 8px;font-size:11px;cursor:pointer;font-family:'Nunito',sans-serif}
+.copy-btn:hover{background:var(--surf3);color:var(--text)}
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--surf3);border:1px solid var(--border2);border-radius:10px;padding:12px 18px;font-size:13px;font-weight:600;z-index:9999;opacity:0;transition:opacity .2s;pointer-events:none;max-width:300px}
+.toast.show{opacity:1}
+.toast.t-success{border-color:var(--accent)55;color:var(--accent)}
+.toast.t-danger{border-color:var(--danger)55;color:var(--danger)}
+.toast.t-warn{border-color:var(--warn)55;color:var(--warn)}
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:#00000088;z-index:1000;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surf);border:1px solid var(--border2);border-radius:16px;padding:24px;width:560px;max-height:90vh;overflow-y:auto;max-width:95vw}
+.modal h2{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+.modal-footer{display:flex;justify-content:flex-end;gap:10px;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
+/* TXN ID style */
+.txn-id{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--dim)}
+/* scrollbar */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+input[type=datetime-local]::-webkit-calendar-picker-indicator{filter:invert(.5)}
+/* mini chart */
+.sparkbar{display:flex;align-items:flex-end;gap:2px;height:32px}
+.sparkbar span{width:6px;border-radius:2px 2px 0 0;background:var(--accent);opacity:.5;flex-shrink:0}
+.sparkbar span.hi{opacity:1}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginPage">
+  <div class="login-box">
+    <h1>Transact<span>IQ</span></h1>
+    <p>Transaction Monitoring System — BCA Final Year Project</p>
+    <div class="form-group" style="margin-bottom:14px">
+      <label>Username</label>
+      <input type="text" id="loginUser" placeholder="admin / sunil" value="admin">
+    </div>
+    <div class="form-group" style="margin-bottom:14px">
+      <label>Password</label>
+      <input type="password" id="loginPass" placeholder="••••••" value="admin123">
+    </div>
+    <div class="form-group" style="margin-bottom:18px">
+      <label>Login As</label>
+      <select id="loginRole">
+        <option value="admin">Admin</option>
+        <option value="user">Business User</option>
+      </select>
+    </div>
+    <button class="btn btn-accent" style="width:100%;justify-content:center;padding:11px" onclick="doLogin()">Login →</button>
+    <p style="font-size:12px;color:var(--muted);margin-top:14px;text-align:center">Demo: admin/admin123 or user/user123</p>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div class="app" id="mainApp" style="display:none">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="s-logo">
+      <h1>Transact<span>IQ</span></h1>
+      <p>Monitoring System v1.0</p>
+    </div>
+    <div class="s-user">
+      <div class="avatar av-green" id="sideAvatar">AD</div>
+      <div><div class="u-name" id="sideName">Admin</div><div class="u-role" id="sideRole">Administrator</div></div>
+    </div>
+    <div class="s-nav">
+      <div class="nav-label">Main</div>
+      <div class="nav-item active" onclick="showPage('dashboard')"><span class="ni">◉</span> Dashboard</div>
+      <div class="nav-item" onclick="showPage('transactions')"><span class="ni">⇄</span> Transactions</div>
+      <div class="nav-item" onclick="showPage('addtxn')"><span class="ni">＋</span> Add Transaction</div>
+      <div class="nav-item" onclick="showPage('import')"><span class="ni">↑</span> Import</div>
+      <div class="nav-label">Management</div>
+      <div class="nav-item" onclick="showPage('parties')"><span class="ni">◎</span> Parties</div>
+      <div class="nav-item" onclick="showPage('analytics')"><span class="ni">▦</span> Analytics & Calc</div>
+      <div class="nav-item" id="approvalNav" onclick="showPage('approvals')"><span class="ni">✓</span> Approvals <span class="fraud-badge" id="approvalBadge">0</span></div>
+      <div class="nav-item" id="fraudNav" onclick="showPage('fraud')"><span class="ni">⚠</span> Fraud Alerts <span class="fraud-badge" id="fraudBadge">0</span></div>
+      <div class="nav-label">Reports</div>
+      <div class="nav-item" onclick="showPage('reports')"><span class="ni">↓</span> Export Reports</div>
+      <div class="nav-item" onclick="doLogout()" style="margin-top:auto"><span class="ni">⇐</span> Logout</div>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main">
+    <!-- TOP BAR -->
+    <div class="topbar">
+      <h2 id="pageTitle">Dashboard</h2>
+      <button class="btn" onclick="showPage('addtxn')">＋ Add Transaction</button>
+      <button class="btn btn-accent" onclick="showPage('reports')">↓ Export</button>
+    </div>
+
+    <!-- DASHBOARD PAGE -->
+    <div class="page active" id="page-dashboard">
+      <div class="stat-grid" id="statGrid"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+        <div class="table-wrap">
+          <div class="table-head"><h3>Recent Transactions</h3><button class="btn" onclick="showPage('transactions')">View All</button></div>
+          <table><thead><tr><th>ID</th><th>Party</th><th>Amount</th><th>Type</th><th>Status</th></tr></thead>
+          <tbody id="recentTxnBody"></tbody></table>
+        </div>
+        <div class="table-wrap">
+          <div class="table-head"><h3>Fraud Alerts</h3><span class="badge b-red" id="fraudCount">0 flags</span></div>
+          <div id="dashFraudList" style="padding:10px 14px"></div>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <div class="table-head"><h3>Pending Approvals</h3><span class="badge b-amber" id="pendingCount">0 pending</span></div>
+        <div id="dashApprovalList" style="padding:10px 14px"></div>
+      </div>
+    </div>
+
+    <!-- TRANSACTIONS PAGE -->
+    <div class="page" id="page-transactions">
+      <div class="filter-bar">
+        <h3>🔍 Filter Transactions</h3>
+        <div class="filter-grid">
+          <div class="form-group"><label>From Date</label><input type="date" id="fFrom"></div>
+          <div class="form-group"><label>To Date</label><input type="date" id="fTo"></div>
+          <div class="form-group"><label>Type</label>
+            <select id="fType"><option value="">All Types</option><option>Credit</option><option>Debit</option><option>Pending</option><option>Transfer</option></select></div>
+          <div class="form-group"><label>Method</label>
+            <select id="fMethod"><option value="">All Methods</option><option>UPI</option><option>Bank Transfer</option><option>Cash</option><option>Cheque</option></select></div>
+          <div class="form-group"><label>Status</label>
+            <select id="fStatus"><option value="">All Status</option><option>Completed</option><option>Failed</option><option>Pending</option><option>Flagged</option></select></div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;align-items:center">
+          <div class="form-group" style="flex:1;min-width:180px"><label>Search Party / Ref ID</label><input type="text" id="fSearch" placeholder="Name, mobile, ref..."></div>
+          <div class="form-group" style="width:150px"><label>Category</label>
+            <select id="fCat"><option value="">All Categories</option><option>Salary</option><option>Loan</option><option>Stock/Investment</option><option>Grocery</option><option>Medical</option><option>Travel</option><option>Other</option></select></div>
+          <div class="form-group" style="width:130px"><label>Min ₹</label><input type="number" id="fMin" placeholder="0"></div>
+          <div class="form-group" style="width:130px"><label>Max ₹</label><input type="number" id="fMax" placeholder="unlimited"></div>
+          <div style="padding-top:16px;display:flex;gap:8px">
+            <button class="btn btn-accent" onclick="applyFilters()">Apply Filter</button>
+            <button class="btn" onclick="clearFilters()">Clear</button>
+          </div>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <div class="table-head">
+          <h3>All Transactions</h3>
+          <span class="badge b-blue" id="txnCountBadge">0 records</span>
+          <button class="btn" onclick="exportCurrentView()">↓ Export View</button>
+        </div>
+        <div style="overflow-x:auto">
+        <table><thead><tr>
+          <th>Txn ID</th><th>Date & Time</th><th>Sender</th><th>Receiver</th>
+          <th>Amount</th><th>Method</th><th>Category</th><th>Type</th><th>Status</th><th>Ref ID</th><th>Flags</th><th>Actions</th>
+        </tr></thead><tbody id="txnTableBody"></tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADD TRANSACTION PAGE -->
+    <div class="page" id="page-addtxn">
+      <div style="display:grid;grid-template-columns:1fr 380px;gap:16px">
+        <div>
+          <!-- Party Section -->
+          <div class="form-section">
+            <h3>👤 Sender Details</h3>
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Sender Name</label>
+                <input type="text" id="senderName" placeholder="e.g. Sunil Kumar" list="partyList">
+                <datalist id="partyList"></datalist>
+              </div>
+              <div class="form-group">
+                <label>Sender Mobile</label>
+                <input type="tel" id="senderMobile" placeholder="10-digit mobile" maxlength="10">
+              </div>
+              <div class="form-group">
+                <label>Sender Location</label>
+                <input type="text" id="senderLocation" placeholder="e.g. Chennai, TN">
+              </div>
+              <div class="form-group">
+                <label>Account / UPI ID</label>
+                <input type="text" id="senderAccount" placeholder="UPI or account number">
+              </div>
+            </div>
+            <button class="copy-btn" onclick="copyToReceiver()" style="margin-top:10px">⎘ Copy Sender → Receiver (same party)</button>
+          </div>
+
+          <div class="form-section">
+            <h3>👤 Receiver Details</h3>
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Receiver Name</label>
+                <input type="text" id="receiverName" placeholder="e.g. Rajan Shop" list="partyList2">
+                <datalist id="partyList2"></datalist>
+              </div>
+              <div class="form-group">
+                <label>Receiver Mobile</label>
+                <input type="tel" id="receiverMobile" placeholder="10-digit mobile" maxlength="10">
+              </div>
+              <div class="form-group">
+                <label>Receiver Location</label>
+                <input type="text" id="receiverLocation" placeholder="e.g. Trichy, TN">
+              </div>
+              <div class="form-group">
+                <label>Account / UPI ID</label>
+                <input type="text" id="receiverAccount" placeholder="UPI or account number">
+              </div>
+            </div>
+          </div>
+
+          <!-- Transaction Details -->
+          <div class="form-section">
+            <h3>💸 Transaction Details</h3>
+            <div class="form-grid g3">
+              <div class="form-group">
+                <label>Amount (₹)</label>
+                <input type="number" id="txnAmount" placeholder="e.g. 2000" min="1" oninput="checkFraudLive()">
+              </div>
+              <div class="form-group">
+                <label>Transaction Type</label>
+                <select id="txnType">
+                  <option>Credit</option><option>Debit</option><option>Pending</option><option>Transfer</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Payment Method</label>
+                <select id="txnMethod">
+                  <option>UPI</option><option>Bank Transfer</option><option>Cash</option><option>Cheque</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Category</label>
+                <select id="txnCategory">
+                  <option>Salary</option><option>Loan</option><option>Stock/Investment</option>
+                  <option>Grocery</option><option>Medical</option><option>Travel</option><option>Other</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Payment Status</label>
+                <select id="txnStatus" onchange="checkFraudLive()">
+                  <option>Completed</option><option>Failed</option><option>Pending</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Reference ID</label>
+                <input type="text" id="txnRef" placeholder="Cheque no / loan slip / UTR">
+              </div>
+            </div>
+            <div class="form-grid" style="margin-top:14px">
+              <div class="form-group">
+                <label>Transaction Date & Time</label>
+                <input type="datetime-local" id="txnDateTime">
+              </div>
+              <div class="form-group">
+                <label>Description / Note</label>
+                <input type="text" id="txnNote" placeholder="Optional note...">
+              </div>
+            </div>
+          </div>
+
+          <div id="fraudWarningBox" style="display:none;background:#f5315d0e;border:1px solid #f5315d44;border-radius:10px;padding:14px;margin-bottom:14px">
+            <div style="color:var(--danger);font-weight:700;font-size:13px;margin-bottom:4px">⚠ Fraud Alert Triggered</div>
+            <div id="fraudWarningMsg" style="color:var(--dim);font-size:12px"></div>
+          </div>
+
+          <div style="display:flex;gap:10px">
+            <button class="btn btn-accent" onclick="submitTransaction()" style="flex:1;justify-content:center;padding:11px">Submit Transaction</button>
+            <button class="btn" onclick="clearForm()">Clear Form</button>
+          </div>
+        </div>
+
+        <!-- RIGHT PANEL: Quick Summary + Last Party -->
+        <div>
+          <div class="form-section" style="margin-bottom:12px">
+            <h3>🪪 Transaction ID Preview</h3>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent);background:var(--surf2);padding:10px;border-radius:8px" id="idPreview">TXN-2024-XXXX</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:6px">Auto-generated on submit</div>
+          </div>
+          <div class="form-section" style="margin-bottom:12px">
+            <h3>⚡ Quick Party Fill</h3>
+            <div id="quickParties" style="display:flex;flex-direction:column;gap:6px;max-height:200px;overflow-y:auto"></div>
+            <div style="font-size:11px;color:var(--muted);margin-top:8px">Click a party to auto-fill sender</div>
+          </div>
+          <div class="form-section">
+            <h3>📊 Today's Summary</h3>
+            <div id="todaySummary"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- IMPORT PAGE -->
+    <div class="page" id="page-import">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div class="form-section">
+          <h3>📂 Import from Excel / CSV</h3>
+          <div class="import-zone" id="dropZone" onclick="document.getElementById('xlsxInput').click()">
+            <div style="font-size:28px;color:var(--muted)">📊</div>
+            <div style="font-weight:700;margin-top:8px">Click or drag & drop Excel / CSV</div>
+            <p>Supports .xlsx, .xls, .csv formats</p>
+          </div>
+          <input type="file" id="xlsxInput" style="display:none" accept=".xlsx,.xls,.csv" onchange="importExcel(event)">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:12px">
+            <b style="color:var(--dim)">Required columns:</b> sender_name, receiver_name, amount, type, method, status, date
+          </div>
+          <button class="btn" onclick="downloadTemplate()">↓ Download Template</button>
+        </div>
+        <div class="form-section">
+          <h3>📷 Import from Photo</h3>
+          <div class="import-zone" onclick="document.getElementById('photoInput').click()">
+            <div style="font-size:28px;color:var(--muted)">📷</div>
+            <div style="font-weight:700;margin-top:8px">Click to upload photo</div>
+            <p>JPG, PNG — cheque, receipt, passbook photo</p>
+          </div>
+          <input type="file" id="photoInput" style="display:none" accept="image/*" onchange="importPhoto(event)">
+          <div id="photoPreview" style="margin-top:10px"></div>
+        </div>
+      </div>
+      <div class="table-wrap" id="importPreviewWrap" style="display:none">
+        <div class="table-head"><h3>Import Preview</h3><button class="btn btn-accent" onclick="confirmImport()">Confirm Import</button></div>
+        <div style="overflow-x:auto"><table><thead><tr><th>Sender</th><th>Receiver</th><th>Amount</th><th>Type</th><th>Method</th><th>Status</th><th>Date</th></tr></thead>
+        <tbody id="importPreviewBody"></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- PARTIES PAGE -->
+    <div class="page" id="page-parties">
+      <div style="display:flex;gap:10px;margin-bottom:16px;align-items:center">
+        <input type="text" id="partySearch" placeholder="Search parties..." style="background:var(--surf);border:1px solid var(--border2);border-radius:8px;color:var(--text);padding:8px 12px;font-family:'Nunito',sans-serif;width:260px;outline:none" oninput="renderParties()">
+        <button class="btn btn-accent" onclick="openAddPartyModal()">＋ Add Party</button>
+      </div>
+      <div class="party-grid" id="partyGrid"></div>
+    </div>
+
+    <!-- ANALYTICS PAGE -->
+    <div class="page" id="page-analytics">
+      <div class="filter-bar">
+        <h3>📅 Analysis Period</h3>
+        <div class="filter-grid" style="grid-template-columns:repeat(4,1fr) auto">
+          <div class="form-group"><label>From</label><input type="date" id="calcFrom"></div>
+          <div class="form-group"><label>To</label><input type="date" id="calcTo"></div>
+          <div class="form-group"><label>Quick Range</label>
+            <select id="quickRange" onchange="setQuickRange()">
+              <option value="">Custom</option>
+              <option value="today">Today</option>
+              <option value="week">This Week</option>
+              <option value="month">This Month</option>
+              <option value="quarter">This Quarter</option>
+              <option value="year">This Year</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Group By</label>
+            <select id="groupBy"><option value="day">Day</option><option value="month">Month</option><option value="year">Year</option></select>
+          </div>
+          <div style="padding-top:16px"><button class="btn btn-accent" onclick="runAnalytics()">Calculate</button></div>
+        </div>
+      </div>
+      <div id="analyticsResult"></div>
+    </div>
+
+    <!-- APPROVALS PAGE -->
+    <div class="page" id="page-approvals">
+      <div style="font-size:13px;color:var(--muted);margin-bottom:14px">Transactions above ₹40,000 require admin approval before processing.</div>
+      <div id="approvalList"></div>
+    </div>
+
+    <!-- FRAUD PAGE -->
+    <div class="page" id="page-fraud">
+      <div style="font-size:13px;color:var(--muted);margin-bottom:14px">Flagged transactions: amount &gt; ₹40,000 / 3 consecutive failed / same account within 5 minutes.</div>
+      <div id="fraudList"></div>
+    </div>
+
+    <!-- REPORTS PAGE -->
+    <div class="page" id="page-reports">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div class="form-section">
+          <h3>📥 Export Options</h3>
+          <div class="form-grid" style="margin-bottom:14px">
+            <div class="form-group"><label>From Date</label><input type="date" id="rFrom"></div>
+            <div class="form-group"><label>To Date</label><input type="date" id="rTo"></div>
+            <div class="form-group"><label>Type Filter</label>
+              <select id="rType"><option value="">All</option><option>Credit</option><option>Debit</option><option>Pending</option><option>Transfer</option></select></div>
+            <div class="form-group"><label>Status Filter</label>
+              <select id="rStatus"><option value="">All</option><option>Completed</option><option>Failed</option><option>Pending</option></select></div>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn btn-accent" onclick="exportExcel()">📊 Export Excel</button>
+            <button class="btn" onclick="exportPDF()">📄 Export PDF</button>
+            <button class="btn" onclick="exportCSV()">📋 Export CSV</button>
+          </div>
+        </div>
+        <div class="form-section">
+          <h3>📊 Quick Stats for Period</h3>
+          <div id="reportStats"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD PARTY MODAL -->
+<div class="modal-overlay" id="partyModal">
+  <div class="modal">
+    <h2>Add / Edit Party</h2>
+    <div class="form-grid">
+      <div class="form-group"><label>Party Name</label><input type="text" id="pm_name" placeholder="Sunil Kumar"></div>
+      <div class="form-group"><label>Mobile</label><input type="tel" id="pm_mobile" maxlength="10"></div>
+      <div class="form-group"><label>Location</label><input type="text" id="pm_location"></div>
+      <div class="form-group"><label>Account / UPI</label><input type="text" id="pm_account"></div>
+      <div class="form-group full-span"><label>Notes</label><input type="text" id="pm_notes" placeholder="Supplier, employee, etc."></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closePartyModal()">Cancel</button>
+      <button class="btn btn-accent" onclick="saveParty()">Save Party</button>
+    </div>
+  </div>
+</div>
+
+<!-- VIEW TXN MODAL -->
+<div class="modal-overlay" id="viewModal">
+  <div class="modal" style="width:620px">
+    <h2>Transaction Details</h2>
+    <div id="viewModalContent"></div>
+    <div class="modal-footer"><button class="btn" onclick="closeViewModal()">Close</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============ DATA ============
+let currentUser = null;
+let transactions = [];
+let parties = [];
+let pendingImport = [];
+let editingPartyId = null;
+const FRAUD_THRESHOLD = 40000;
+
+// ---- Seed Data ----
+function seedData(){
+  parties = [
+    {id:'P001',name:'Sunil Kumar',mobile:'9876543210',location:'Trichy, TN',account:'sunil@upi',notes:'Regular supplier'},
+    {id:'P002',name:'Rajan Stores',mobile:'9944332211',location:'Chennai, TN',account:'rajan@upi',notes:'Grocery vendor'},
+    {id:'P003',name:'Priya Salary',mobile:'8765432109',location:'Coimbatore, TN',account:'SB-001234',notes:'Employee'},
+    {id:'P004',name:'KVB Bank',mobile:'0431-2411600',location:'Trichy',account:'KVB-CORP',notes:'Bank account'},
+  ];
+  const now = new Date();
+  const d=(n)=>{const x=new Date(now);x.setDate(x.getDate()-n);return x.toISOString().slice(0,16)};
+  transactions = [
+    mkT('Sunil Kumar','Rajan Stores',2000,'Debit','UPI','Grocery','Completed',d(0),'UTR001','Grocery purchase'),
+    mkT('KVB Bank','Sunil Kumar',45000,'Credit','Bank Transfer','Salary','Completed',d(1),'SAL-MAR','March salary',true),
+    mkT('Sunil Kumar','Priya Salary',15000,'Debit','Bank Transfer','Salary','Completed',d(2),'SAL-PR','Staff salary'),
+    mkT('Sunil Kumar','KVB Bank',5000,'Debit','UPI','Loan','Completed',d(3),'LOAN-01','Loan EMI'),
+    mkT('Rajan Stores','Sunil Kumar',8000,'Credit','Cash','Other','Completed',d(4),'CASH-01','Cash return'),
+    mkT('Sunil Kumar','Apollo Med','3200','Debit','UPI','Medical','Completed',d(5),'MED-01','Medicine purchase'),
+    mkT('Sunil Kumar','Travel Co',12000,'Debit','Cheque','Travel','Pending',d(6),'CHQ-001','Office travel'),
+    mkT('Sunil Kumar','NSE Broker',50000,'Debit','Bank Transfer','Stock/Investment','Pending',d(7),'STK-001','Stock purchase',true),
+    mkT('Sunil Kumar','Rajan Stores',1800,'Debit','UPI','Grocery','Failed',d(0),'UTR002',''),
+    mkT('Sunil Kumar','Rajan Stores',2200,'Debit','UPI','Grocery','Failed',d(0),'UTR003',''),
+    mkT('Sunil Kumar','Rajan Stores',1500,'Debit','UPI','Grocery','Failed',d(0),'UTR004','Consecutive fails'),
+  ];
+  // Mark consecutive fails
+  checkAllFraud();
+}
+
+function mkT(sender,receiver,amount,type,method,category,status,dt,ref,note='',largeflag=false){
+  return {
+    id: genTxnId(),
+    sender,receiver,
+    senderMobile:'',receiverMobile:'',
+    senderLocation:'',receiverLocation:'',
+    amount:Number(amount),type,method,category,status,
+    datetime:dt,ref,note,
+    fraudFlags:[],
+    approvalStatus: (Number(amount)>=FRAUD_THRESHOLD)?'Pending':'Approved',
+    createdAt: new Date().toISOString()
+  };
+}
+
+let txnCounter = 1000;
+function genTxnId(){
+  txnCounter++;
+  return 'TXN-'+new Date().getFullYear()+'-'+String(txnCounter).padStart(4,'0');
+}
+
+function checkAllFraud(){
+  // Reset fraud flags
+  transactions.forEach(t=>t.fraudFlags=[]);
+
+  // 1. Large amount flag
+  transactions.forEach(t=>{
+    if(t.amount>=FRAUD_THRESHOLD && !t.fraudFlags.includes('large'))
+      t.fraudFlags.push('large');
+  });
+
+  // 2. Consecutive failed transactions (3+) per sender
+  const bySender={};
+  transactions.sort((a,b)=>new Date(a.datetime)-new Date(b.datetime));
+  transactions.forEach(t=>{
+    if(!bySender[t.sender]) bySender[t.sender]={count:0,ids:[]};
+    if(t.status==='Failed'){
+      bySender[t.sender].count++;
+      bySender[t.sender].ids.push(t.id);
+      if(bySender[t.sender].count>=3){
+        bySender[t.sender].ids.forEach(id=>{
+          const tx=transactions.find(x=>x.id===id);
+          if(tx && !tx.fraudFlags.includes('consec_fail')) tx.fraudFlags.push('consec_fail');
+        });
+      }
+    } else {
+      bySender[t.sender].count=0;
+      bySender[t.sender].ids=[];
+    }
+  });
+
+  // 3. Same account within 5 minutes
+  for(let i=0;i<transactions.length;i++){
+    for(let j=i+1;j<transactions.length;j++){
+      const a=transactions[i], b=transactions[j];
+      if(a.sender===b.sender || a.receiver===b.receiver){
+        const diff=Math.abs(new Date(a.datetime)-new Date(b.datetime))/60000;
+        if(diff<=5){
+          if(!a.fraudFlags.includes('rapid')) a.fraudFlags.push('rapid');
+          if(!b.fraudFlags.includes('rapid')) b.fraudFlags.push('rapid');
+        }
+      }
+    }
+  }
+  updateBadges();
+}
+
+function updateBadges(){
+  const fraudCount = transactions.filter(t=>t.fraudFlags.length>0).length;
+  const approvalCount = transactions.filter(t=>t.approvalStatus==='Pending').length;
+  document.getElementById('fraudBadge').textContent=fraudCount;
+  document.getElementById('approvalBadge').textContent=approvalCount;
+}
+
+// ============ AUTH ============
+function doLogin(){
+  const u=document.getElementById('loginUser').value;
+  const p=document.getElementById('loginPass').value;
+  const r=document.getElementById('loginRole').value;
+  if((u==='admin'&&p==='admin123')||(u==='user'&&p==='user123')||p.length>=3){
+    currentUser={username:u,role:r,display:u.charAt(0).toUpperCase()+u.slice(1)};
+    document.getElementById('loginPage').style.display='none';
+    document.getElementById('mainApp').style.display='flex';
+    document.getElementById('sideName').textContent=currentUser.display;
+    document.getElementById('sideRole').textContent=r==='admin'?'Administrator':'Business User';
+    document.getElementById('sideAvatar').textContent=currentUser.display.slice(0,2).toUpperCase();
+    seedData();
+    setDefaultDates();
+    renderDashboard();
+    renderParties();
+    renderQuickParties();
+  } else {
+    showToast('Invalid credentials','danger');
+  }
+}
+function doLogout(){
+  document.getElementById('loginPage').style.display='flex';
+  document.getElementById('mainApp').style.display='none';
+}
+
+// ============ NAVIGATION ============
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const pg=document.getElementById('page-'+id);
+  if(pg) pg.classList.add('active');
+  const navMap={dashboard:'Dashboard',transactions:'Transactions',addtxn:'Add Transaction',
+    import:'Import Data',parties:'Parties',analytics:'Analytics & Calculator',
+    approvals:'Pending Approvals',fraud:'Fraud Alerts',reports:'Export Reports'};
+  document.getElementById('pageTitle').textContent=navMap[id]||id;
+  if(id==='dashboard') renderDashboard();
+  if(id==='transactions') renderTransactions();
+  if(id==='parties') renderParties();
+  if(id==='approvals') renderApprovals();
+  if(id==='fraud') renderFraud();
+  if(id==='analytics') renderReportStats('analyticsResult');
+  if(id==='reports') renderReportStats('reportStats');
+}
+
+function setDefaultDates(){
+  const today=new Date().toISOString().split('T')[0];
+  const fy=new Date();fy.setMonth(fy.getMonth()-1);
+  const lastMonth=fy.toISOString().split('T')[0];
+  document.getElementById('txnDateTime').value=new Date().toISOString().slice(0,16);
+  document.getElementById('calcFrom').value=lastMonth;
+  document.getElementById('calcTo').value=today;
+  document.getElementById('rFrom').value=lastMonth;
+  document.getElementById('rTo').value=today;
+}
+
+// ============ DASHBOARD ============
+function renderDashboard(){
+  checkAllFraud();
+  const total=transactions.reduce((s,t)=>s+t.amount,0);
+  const credit=transactions.filter(t=>t.type==='Credit').reduce((s,t)=>s+t.amount,0);
+  const debit=transactions.filter(t=>t.type==='Debit').reduce((s,t)=>s+t.amount,0);
+  const fraud=transactions.filter(t=>t.fraudFlags.length>0).length;
+  const pending=transactions.filter(t=>t.approvalStatus==='Pending').length;
+  const today=new Date().toDateString();
+  const todayTxn=transactions.filter(t=>new Date(t.datetime).toDateString()===today);
+  const todayAmt=todayTxn.reduce((s,t)=>s+t.amount,0);
+
+  document.getElementById('statGrid').innerHTML=`
+    <div class="stat-card sc-blue"><div class="stat-label">Total Transactions</div><div class="stat-val">${transactions.length}</div><div class="stat-sub">All time</div></div>
+    <div class="stat-card sc-green"><div class="stat-label">Total Credit</div><div class="stat-val">₹${fmt(credit)}</div><div class="stat-sub">Money received</div></div>
+    <div class="stat-card sc-red"><div class="stat-label">Total Debit</div><div class="stat-val">₹${fmt(debit)}</div><div class="stat-sub">Money sent</div></div>
+    <div class="stat-card sc-amber"><div class="stat-label">Fraud Flags</div><div class="stat-val" style="color:var(--danger)">${fraud}</div><div class="stat-sub">${pending} pending approval</div></div>
+  `;
+
+  // Recent 5
+  const recent=[...transactions].sort((a,b)=>new Date(b.datetime)-new Date(a.datetime)).slice(0,5);
+  document.getElementById('recentTxnBody').innerHTML=recent.map(t=>`
+    <tr>
+      <td class="txn-id">${t.id}</td>
+      <td>${t.sender} → ${t.receiver}</td>
+      <td style="color:${t.type==='Credit'?'var(--cr)':t.type==='Debit'?'var(--db)':'var(--pd)'}">₹${fmt(t.amount)}</td>
+      <td><span class="badge ${typeBadge(t.type)}">${t.type}</span></td>
+      <td><span class="badge ${statusBadge(t.status)}">${t.status}</span></td>
+    </tr>
+  `).join('');
+
+  // Fraud list
+  const fraudTxns=transactions.filter(t=>t.fraudFlags.length>0).slice(0,3);
+  document.getElementById('fraudCount').textContent=fraud+' flags';
+  document.getElementById('dashFraudList').innerHTML=fraudTxns.length?fraudTxns.map(t=>`
+    <div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:12px">
+      <div style="font-weight:700;color:var(--danger)">${t.id} — ₹${fmt(t.amount)}</div>
+      <div style="color:var(--muted)">${fraudFlagText(t.fraudFlags)} | ${t.sender}</div>
+    </div>
+  `).join(''):'<div style="color:var(--muted);font-size:13px;padding:8px 0">No fraud flags</div>';
+
+  // Approvals
+  const appTxns=transactions.filter(t=>t.approvalStatus==='Pending').slice(0,3);
+  document.getElementById('pendingCount').textContent=pending+' pending';
+  document.getElementById('dashApprovalList').innerHTML=appTxns.length?appTxns.map(t=>`
+    <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border)">
+      <div style="flex:1;font-size:12px">
+        <div style="font-weight:700">${t.id} — ₹${fmt(t.amount)}</div>
+        <div style="color:var(--muted)">${t.sender} → ${t.receiver}</div>
+      </div>
+      <button class="btn" style="font-size:11px;padding:4px 10px;color:var(--cr);border-color:var(--cr)33" onclick="approveT('${t.id}')">Approve</button>
+      <button class="btn" style="font-size:11px;padding:4px 10px;color:var(--danger);border-color:var(--danger)33" onclick="rejectT('${t.id}')">Reject</button>
+    </div>
+  `).join(''):'<div style="color:var(--muted);font-size:13px;padding:8px 0">No pending approvals</div>';
+}
+
+// ============ TRANSACTIONS ============
+let filteredTxns=[];
+function renderTransactions(txns){
+  filteredTxns = txns || [...transactions].sort((a,b)=>new Date(b.datetime)-new Date(a.datetime));
+  document.getElementById('txnCountBadge').textContent=filteredTxns.length+' records';
+  document.getElementById('txnTableBody').innerHTML=filteredTxns.map(t=>`
+    <tr>
+      <td class="txn-id">${t.id}</td>
+      <td style="white-space:nowrap;font-size:12px">${fmtDT(t.datetime)}</td>
+      <td>
+        <div style="font-weight:600">${t.sender}</div>
+        <div style="font-size:11px;color:var(--muted)">${t.senderMobile||''}</div>
+      </td>
+      <td>
+        <div style="font-weight:600">${t.receiver}</div>
+        <div style="font-size:11px;color:var(--muted)">${t.receiverMobile||''}</div>
+      </td>
+      <td style="font-weight:700;color:${t.type==='Credit'?'var(--cr)':t.type==='Debit'?'var(--db)':'var(--pd)'}">₹${fmt(t.amount)}</td>
+      <td><span class="badge b-gray">${t.method}</span></td>
+      <td><span class="badge b-purple">${t.category}</span></td>
+      <td><span class="badge ${typeBadge(t.type)}">${t.type}</span></td>
+      <td><span class="badge ${statusBadge(t.status)}">${t.status}</span></td>
+      <td class="txn-id">${t.ref||'—'}</td>
+      <td>${t.fraudFlags.length?'<span class="fraud-flag">⚠ '+fraudFlagShort(t.fraudFlags)+'</span>':''}${t.approvalStatus==='Pending'?'<span class="pending-flag">⏳ Approval</span>':''}</td>
+      <td style="white-space:nowrap">
+        <button class="copy-btn" onclick="viewTxn('${t.id}')">View</button>
+        <button class="copy-btn" onclick="copyTxnId('${t.id}')" style="margin-left:4px">Copy ID</button>
+      </td>
+    </tr>
+  `).join('')||'<tr><td colspan="12" style="text-align:center;padding:20px;color:var(--muted)">No transactions found</td></tr>';
+}
+
+function applyFilters(){
+  let r=[...transactions];
+  const from=document.getElementById('fFrom').value;
+  const to=document.getElementById('fTo').value;
+  const type=document.getElementById('fType').value;
+  const method=document.getElementById('fMethod').value;
+  const status=document.getElementById('fStatus').value;
+  const search=document.getElementById('fSearch').value.toLowerCase();
+  const cat=document.getElementById('fCat').value;
+  const min=parseFloat(document.getElementById('fMin').value)||0;
+  const max=parseFloat(document.getElementById('fMax').value)||Infinity;
+  if(from) r=r.filter(t=>t.datetime>=from);
+  if(to) r=r.filter(t=>t.datetime<=to+'T23:59');
+  if(type) r=r.filter(t=>t.type===type);
+  if(method) r=r.filter(t=>t.method===method);
+  if(status) r=r.filter(t=>t.status===status);
+  if(cat) r=r.filter(t=>t.category===cat);
+  if(search) r=r.filter(t=>(t.sender+t.receiver+t.id+t.ref+t.senderMobile+t.receiverMobile).toLowerCase().includes(search));
+  r=r.filter(t=>t.amount>=min && t.amount<=max);
+  r.sort((a,b)=>new Date(b.datetime)-new Date(a.datetime));
+  renderTransactions(r);
+}
+function clearFilters(){
+  ['fFrom','fTo','fSearch','fMin','fMax'].forEach(id=>document.getElementById(id).value='');
+  ['fType','fMethod','fStatus','fCat'].forEach(id=>document.getElementById(id).value='');
+  renderTransactions();
+}
+
+// ============ ADD TRANSACTION ============
+function checkFraudLive(){
+  const amt=parseFloat(document.getElementById('txnAmount').value)||0;
+  const status=document.getElementById('txnStatus').value;
+  const box=document.getElementById('fraudWarningBox');
+  const msg=document.getElementById('fraudWarningMsg');
+  let warnings=[];
+  if(amt>=FRAUD_THRESHOLD) warnings.push('Amount ₹'+fmt(amt)+' exceeds fraud threshold of ₹40,000. Admin approval required.');
+  if(status==='Failed'){
+    const sender=document.getElementById('senderName').value;
+    if(sender){
+      const failCount=transactions.filter(t=>t.sender===sender&&t.status==='Failed').length;
+      if(failCount>=2) warnings.push('This sender has '+(failCount+1)+' failed transactions. Consecutive fail flag will trigger.');
+    }
+  }
+  if(warnings.length){box.style.display='block';msg.innerHTML=warnings.join('<br>')}
+  else{box.style.display='none'}
+  // Update ID preview
+  document.getElementById('idPreview').textContent='TXN-'+new Date().getFullYear()+'-'+String(txnCounter+1).padStart(4,'0');
+}
+
+function copyToReceiver(){
+  document.getElementById('receiverName').value=document.getElementById('senderName').value;
+  document.getElementById('receiverMobile').value=document.getElementById('senderMobile').value;
+  document.getElementById('receiverLocation').value=document.getElementById('senderLocation').value;
+  document.getElementById('receiverAccount').value=document.getElementById('senderAccount').value;
+  showToast('Sender details copied to receiver','success');
+}
+
+function submitTransaction(){
+  const sender=document.getElementById('senderName').value.trim();
+  const receiver=document.getElementById('receiverName').value.trim();
+  const amount=parseFloat(document.getElementById('txnAmount').value);
+  if(!sender||!receiver||!amount){showToast('Please fill Sender, Receiver and Amount','danger');return}
+
+  const t={
+    id:genTxnId(),
+    sender, receiver,
+    senderMobile:document.getElementById('senderMobile').value,
+    receiverMobile:document.getElementById('receiverMobile').value,
+    senderLocation:document.getElementById('senderLocation').value,
+    receiverLocation:document.getElementById('receiverLocation').value,
+    senderAccount:document.getElementById('senderAccount').value,
+    receiverAccount:document.getElementById('receiverAccount').value,
+    amount,
+    type:document.getElementById('txnType').value,
+    method:document.getElementById('txnMethod').value,
+    category:document.getElementById('txnCategory').value,
+    status:document.getElementById('txnStatus').value,
+    datetime:document.getElementById('txnDateTime').value||new Date().toISOString().slice(0,16),
+    ref:document.getElementById('txnRef').value,
+    note:document.getElementById('txnNote').value,
+    fraudFlags:[],
+    approvalStatus: amount>=FRAUD_THRESHOLD?'Pending':'Approved',
+    createdAt:new Date().toISOString()
+  };
+
+  // Auto-add to parties
+  addPartyIfNew(t.sender,t.senderMobile,t.senderLocation,t.senderAccount);
+  addPartyIfNew(t.receiver,t.receiverMobile,t.receiverLocation,t.receiverAccount);
+
+  transactions.push(t);
+  checkAllFraud();
+  renderQuickParties();
+  updateTodaySummary();
+
+  showToast('Transaction '+t.id+' added!','success');
+  if(t.approvalStatus==='Pending') showToast('⚠ Sent for admin approval (amount >₹40,000)','warn');
+
+  clearForm();
+  showPage('transactions');
+}
+
+function clearForm(){
+  ['senderName','senderMobile','senderLocation','senderAccount',
+   'receiverName','receiverMobile','receiverLocation','receiverAccount',
+   'txnAmount','txnRef','txnNote'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('txnDateTime').value=new Date().toISOString().slice(0,16);
+  document.getElementById('fraudWarningBox').style.display='none';
+}
+
+function addPartyIfNew(name,mobile,location,account){
+  if(!name) return;
+  if(!parties.find(p=>p.name.toLowerCase()===name.toLowerCase())){
+    parties.push({id:'P'+String(parties.length+1).padStart(3,'0'),name,mobile,location,account,notes:''});
+    refreshPartyDatalist();
+  }
+}
+
+function refreshPartyDatalist(){
+  const opts=parties.map(p=>`<option value="${p.name}">`).join('');
+  document.getElementById('partyList').innerHTML=opts;
+  document.getElementById('partyList2').innerHTML=opts;
+}
+
+function renderQuickParties(){
+  refreshPartyDatalist();
+  document.getElementById('quickParties').innerHTML=parties.slice(0,6).map(p=>`
+    <div onclick="fillSender('${p.name}','${p.mobile}','${p.location}','${p.account}')" 
+         style="background:var(--surf2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;cursor:pointer;display:flex;align-items:center;gap:8px;transition:border-color .15s"
+         onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+      <div class="avatar av-green" style="width:26px;height:26px;font-size:10px">${p.name.slice(0,2).toUpperCase()}</div>
+      <div>
+        <div style="font-size:12px;font-weight:700">${p.name}</div>
+        <div style="font-size:10px;color:var(--muted)">${p.mobile||'No mobile'}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function fillSender(name,mobile,loc,acc){
+  document.getElementById('senderName').value=name;
+  document.getElementById('senderMobile').value=mobile;
+  document.getElementById('senderLocation').value=loc;
+  document.getElementById('senderAccount').value=acc;
+  showToast('Filled: '+name,'success');
+}
+
+function updateTodaySummary(){
+  const today=new Date().toDateString();
+  const todayT=transactions.filter(t=>new Date(t.datetime).toDateString()===today);
+  const cr=todayT.filter(t=>t.type==='Credit').reduce((s,t)=>s+t.amount,0);
+  const db=todayT.filter(t=>t.type==='Debit').reduce((s,t)=>s+t.amount,0);
+  document.getElementById('todaySummary').innerHTML=`
+    <div class="calc-row"><span style="color:var(--muted)">Transactions</span><span>${todayT.length}</span></div>
+    <div class="calc-row"><span style="color:var(--cr)">Credit</span><span>₹${fmt(cr)}</span></div>
+    <div class="calc-row"><span style="color:var(--db)">Debit</span><span>₹${fmt(db)}</span></div>
+    <div class="calc-total"><span>Net</span><span style="color:${cr-db>=0?'var(--cr)':'var(--db)'}">₹${fmt(cr-db)}</span></div>
+  `;
+}
+
+// ============ PARTIES ============
+function renderParties(){
+  const q=(document.getElementById('partySearch')||{value:''}).value.toLowerCase();
+  const list=parties.filter(p=>!q||p.name.toLowerCase().includes(q)||p.mobile.includes(q));
+  document.getElementById('partyGrid').innerHTML=list.map(p=>{
+    const txns=transactions.filter(t=>t.sender===p.name||t.receiver===p.name);
+    const owed=txns.filter(t=>t.type==='Credit'&&t.receiver===p.name).reduce((s,t)=>s+t.amount,0);
+    const owes=txns.filter(t=>t.type==='Debit'&&t.sender===p.name).reduce((s,t)=>s+t.amount,0);
+    return `
+    <div class="party-card">
+      <div class="avatar av-blue" style="width:40px;height:40px;font-size:14px">${p.name.slice(0,2).toUpperCase()}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:700;font-size:13px">${p.name}</div>
+        <div style="font-size:11px;color:var(--muted)">${p.mobile||'No mobile'} | ${p.location||'—'}</div>
+        <div style="font-size:11px;margin-top:4px">
+          <span style="color:var(--cr)">Rcvd: ₹${fmt(owed)}</span> &nbsp;
+          <span style="color:var(--db)">Sent: ₹${fmt(owes)}</span>
+        </div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px">${txns.length} transactions</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <button class="copy-btn" onclick="editParty('${p.id}')">Edit</button>
+        <button class="copy-btn" onclick="copyText('${p.mobile||p.name}')">Copy</button>
+      </div>
+    </div>`;
+  }).join('')||'<div style="color:var(--muted);padding:20px">No parties found</div>';
+}
+
+function openAddPartyModal(){editingPartyId=null;['pm_name','pm_mobile','pm_location','pm_account','pm_notes'].forEach(id=>document.getElementById(id).value='');document.getElementById('partyModal').classList.add('open')}
+function closePartyModal(){document.getElementById('partyModal').classList.remove('open')}
+function editParty(id){
+  editingPartyId=id;
+  const p=parties.find(x=>x.id===id);
+  if(!p) return;
+  document.getElementById('pm_name').value=p.name;
+  document.getElementById('pm_mobile').value=p.mobile||'';
+  document.getElementById('pm_location').value=p.location||'';
+  document.getElementById('pm_account').value=p.account||'';
+  document.getElementById('pm_notes').value=p.notes||'';
+  document.getElementById('partyModal').classList.add('open');
+}
+function saveParty(){
+  const name=document.getElementById('pm_name').value.trim();
+  if(!name){showToast('Party name required','danger');return}
+  if(editingPartyId){
+    const p=parties.find(x=>x.id===editingPartyId);
+    if(p){p.name=name;p.mobile=document.getElementById('pm_mobile').value;p.location=document.getElementById('pm_location').value;p.account=document.getElementById('pm_account').value;p.notes=document.getElementById('pm_notes').value;}
+  } else {
+    parties.push({id:'P'+String(parties.length+1).padStart(3,'0'),name,mobile:document.getElementById('pm_mobile').value,location:document.getElementById('pm_location').value,account:document.getElementById('pm_account').value,notes:document.getElementById('pm_notes').value});
+  }
+  closePartyModal();renderParties();refreshPartyDatalist();showToast('Party saved','success');
+}
+
+// ============ APPROVALS ============
+function renderApprovals(){
+  const list=transactions.filter(t=>t.approvalStatus==='Pending');
+  document.getElementById('approvalList').innerHTML=list.length?list.map(t=>`
+    <div class="approval-card">
+      <div style="background:var(--warn)22;border-radius:10px;padding:10px 14px;text-align:center;min-width:80px">
+        <div style="font-size:11px;color:var(--muted)">Amount</div>
+        <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--warn)">₹${fmt(t.amount)}</div>
+      </div>
+      <div class="approval-info">
+        <h4>${t.id} — ${t.type} | ${t.method}</h4>
+        <p>${t.sender} → ${t.receiver}</p>
+        <p style="margin-top:2px">${fmtDT(t.datetime)} | ${t.category} | ${t.ref||'No ref'}</p>
+        <p style="margin-top:2px;color:var(--danger);font-size:11px">${fraudFlagText(t.fraudFlags)}</p>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <button class="btn btn-accent" onclick="approveT('${t.id}')">✓ Approve</button>
+        <button class="btn btn-danger" onclick="rejectT('${t.id}')">✗ Reject</button>
+      </div>
+    </div>
+  `).join(''):'<div style="color:var(--muted);padding:20px;text-align:center">No pending approvals</div>';
+}
+function approveT(id){const t=transactions.find(x=>x.id===id);if(t){t.approvalStatus='Approved';t.status='Completed';}checkAllFraud();renderApprovals();renderDashboard();showToast('Transaction approved','success')}
+function rejectT(id){const t=transactions.find(x=>x.id===id);if(t){t.approvalStatus='Rejected';t.status='Failed';}checkAllFraud();renderApprovals();renderDashboard();showToast('Transaction rejected','danger')}
+
+// ============ FRAUD ============
+function renderFraud(){
+  const list=transactions.filter(t=>t.fraudFlags.length>0);
+  document.getElementById('fraudList').innerHTML=list.length?list.map(t=>`
+    <div class="fraud-card">
+      <h4>⚠ ${t.id} — ₹${fmt(t.amount)} <span class="badge b-red" style="font-size:10px">${t.type}</span></h4>
+      <p><b>Reason:</b> ${fraudFlagText(t.fraudFlags)}</p>
+      <p style="margin-top:4px">${t.sender} → ${t.receiver} | ${fmtDT(t.datetime)} | ${t.method}</p>
+      <p style="margin-top:4px">Status: <span class="badge ${statusBadge(t.status)}">${t.status}</span> | Approval: <span class="badge ${t.approvalStatus==='Approved'?'b-green':t.approvalStatus==='Rejected'?'b-red':'b-amber'}">${t.approvalStatus}</span></p>
+    </div>
+  `).join(''):'<div style="color:var(--muted);padding:20px;text-align:center">No fraud flags detected</div>';
+}
+
+// ============ ANALYTICS ============
+function setQuickRange(){
+  const v=document.getElementById('quickRange').value;
+  const now=new Date();
+  let from=new Date();
+  if(v==='today'){from=new Date(now.toDateString())}
+  else if(v==='week'){from=new Date(now);from.setDate(now.getDate()-7)}
+  else if(v==='month'){from=new Date(now.getFullYear(),now.getMonth(),1)}
+  else if(v==='quarter'){from=new Date(now.getFullYear(),Math.floor(now.getMonth()/3)*3,1)}
+  else if(v==='year'){from=new Date(now.getFullYear(),0,1)}
+  if(v){
+    document.getElementById('calcFrom').value=from.toISOString().split('T')[0];
+    document.getElementById('calcTo').value=now.toISOString().split('T')[0];
+  }
+}
+
+function runAnalytics(){
+  const from=document.getElementById('calcFrom').value;
+  const to=document.getElementById('calcTo').value;
+  const group=document.getElementById('groupBy').value;
+  let r=transactions;
+  if(from) r=r.filter(t=>t.datetime>=from);
+  if(to) r=r.filter(t=>t.datetime<=to+'T23:59');
+
+  const total=r.reduce((s,t)=>s+t.amount,0);
+  const credit=r.filter(t=>t.type==='Credit').reduce((s,t)=>s+t.amount,0);
+  const debit=r.filter(t=>t.type==='Debit').reduce((s,t)=>s+t.amount,0);
+  const pending=r.filter(t=>t.type==='Pending').reduce((s,t)=>s+t.amount,0);
+  const transfer=r.filter(t=>t.type==='Transfer').reduce((s,t)=>s+t.amount,0);
+  const failed=r.filter(t=>t.status==='Failed').length;
+  const completed=r.filter(t=>t.status==='Completed').length;
+
+  // Group breakdown
+  const groups={};
+  r.forEach(t=>{
+    let key;
+    const d=new Date(t.datetime);
+    if(group==='day') key=d.toISOString().split('T')[0];
+    else if(group==='month') key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+    else key=String(d.getFullYear());
+    if(!groups[key]) groups[key]={cr:0,db:0,count:0};
+    if(t.type==='Credit') groups[key].cr+=t.amount;
+    if(t.type==='Debit') groups[key].db+=t.amount;
+    groups[key].count++;
+  });
+
+  // Category breakdown
+  const cats={};
+  r.forEach(t=>{if(!cats[t.category]) cats[t.category]=0;cats[t.category]+=t.amount});
+
+  document.getElementById('analyticsResult').innerHTML=`
+    <div class="calc-grid">
+      <div class="calc-card">
+        <h4>Summary (${r.length} txns)</h4>
+        <div class="calc-row"><span>Total Volume</span><span style="font-weight:700">₹${fmt(total)}</span></div>
+        <div class="calc-row"><span style="color:var(--cr)">Total Credit</span><span style="color:var(--cr)">₹${fmt(credit)}</span></div>
+        <div class="calc-row"><span style="color:var(--db)">Total Debit</span><span style="color:var(--db)">₹${fmt(debit)}</span></div>
+        <div class="calc-row"><span style="color:var(--pd)">Pending</span><span style="color:var(--pd)">₹${fmt(pending)}</span></div>
+        <div class="calc-row"><span style="color:var(--tr)">Transfer</span><span style="color:var(--tr)">₹${fmt(transfer)}</span></div>
+        <div class="calc-total"><span>Net Balance</span><span style="color:${credit-debit>=0?'var(--cr)':'var(--db)'}">₹${fmt(credit-debit)}</span></div>
+      </div>
+      <div class="calc-card">
+        <h4>Transaction Health</h4>
+        <div class="calc-row"><span>Completed</span><span style="color:var(--cr)">${completed}</span></div>
+        <div class="calc-row"><span>Failed</span><span style="color:var(--db)">${failed}</span></div>
+        <div class="calc-row"><span>Success Rate</span><span>${r.length?Math.round(completed/r.length*100):0}%</span></div>
+        <div class="calc-row"><span>Avg Amount</span><span>₹${r.length?fmt(Math.round(total/r.length)):0}</span></div>
+        <div class="calc-row"><span>Max Transaction</span><span>₹${fmt(Math.max(...r.map(t=>t.amount),0))}</span></div>
+        <div class="calc-row"><span>Min Transaction</span><span>₹${fmt(Math.min(...r.map(t=>t.amount),Infinity)===Infinity?0:Math.min(...r.map(t=>t.amount)))}</span></div>
+      </div>
+      <div class="calc-card">
+        <h4>By Category</h4>
+        ${Object.entries(cats).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`
+          <div class="calc-row"><span>${k}</span><span>₹${fmt(v)}</span></div>
+        `).join('')||'<div style="color:var(--muted)">No data</div>'}
+      </div>
+    </div>
+    <div class="table-wrap">
+      <div class="table-head"><h3>Breakdown by ${group.charAt(0).toUpperCase()+group.slice(1)}</h3></div>
+      <table><thead><tr><th>${group.toUpperCase()}</th><th>Transactions</th><th>Credit</th><th>Debit</th><th>Net</th></tr></thead>
+      <tbody>${Object.entries(groups).sort((a,b)=>b[0].localeCompare(a[0])).map(([k,v])=>`
+        <tr>
+          <td style="font-weight:700">${k}</td>
+          <td>${v.count}</td>
+          <td style="color:var(--cr)">₹${fmt(v.cr)}</td>
+          <td style="color:var(--db)">₹${fmt(v.db)}</td>
+          <td style="color:${v.cr-v.db>=0?'var(--cr)':'var(--db)'}">₹${fmt(v.cr-v.db)}</td>
+        </tr>
+      `).join('')||'<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:16px">No data for this period</td></tr>'}
+      </tbody></table>
+    </div>
+  `;
+}
+
+function renderReportStats(containerId){
+  const from=document.getElementById('rFrom')||{value:''};
+  const to=document.getElementById('rTo')||{value:''};
+  let r=transactions;
+  document.getElementById(containerId).innerHTML=`
+    <div class="calc-row"><span style="color:var(--muted)">Total Records</span><span>${r.length}</span></div>
+    <div class="calc-row"><span style="color:var(--cr)">Credit</span><span>₹${fmt(r.filter(t=>t.type==='Credit').reduce((s,t)=>s+t.amount,0))}</span></div>
+    <div class="calc-row"><span style="color:var(--db)">Debit</span><span>₹${fmt(r.filter(t=>t.type==='Debit').reduce((s,t)=>s+t.amount,0))}</span></div>
+    <div class="calc-row"><span style="color:var(--danger)">Fraud Flags</span><span>${r.filter(t=>t.fraudFlags.length>0).length}</span></div>
+    <div class="calc-total"><span>Net</span><span>₹${fmt(r.filter(t=>t.type==='Credit').reduce((s,t)=>s+t.amount,0)-r.filter(t=>t.type==='Debit').reduce((s,t)=>s+t.amount,0))}</span></div>
+  `;
+}
+
+// ============ IMPORT ============
+let importData=[];
+function importExcel(e){
+  const file=e.target.files[0];
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    const wb=XLSX.read(ev.target.result,{type:'binary'});
+    const ws=wb.Sheets[wb.SheetNames[0]];
+    const data=XLSX.utils.sheet_to_json(ws);
+    importData=data;
+    document.getElementById('importPreviewWrap').style.display='block';
+    document.getElementById('importPreviewBody').innerHTML=data.slice(0,10).map(r=>`
+      <tr>
+        <td>${r.sender_name||r.Sender||''}</td>
+        <td>${r.receiver_name||r.Receiver||''}</td>
+        <td>₹${fmt(parseFloat(r.amount||r.Amount)||0)}</td>
+        <td>${r.type||r.Type||'Debit'}</td>
+        <td>${r.method||r.Method||'UPI'}</td>
+        <td>${r.status||r.Status||'Completed'}</td>
+        <td>${r.date||r.Date||''}</td>
+      </tr>
+    `).join('');
+    showToast(data.length+' rows loaded. Click Confirm to import.','success');
+  };
+  reader.readAsBinaryString(file);
+}
+
+function confirmImport(){
+  importData.forEach(r=>{
+    const t=mkT(
+      r.sender_name||r.Sender||'Unknown',
+      r.receiver_name||r.Receiver||'Unknown',
+      parseFloat(r.amount||r.Amount)||0,
+      r.type||r.Type||'Debit',
+      r.method||r.Method||'UPI',
+      r.category||r.Category||'Other',
+      r.status||r.Status||'Completed',
+      r.date||r.Date||new Date().toISOString().slice(0,16),
+      r.ref||r.Ref||'',
+      r.note||r.Note||''
+    );
+    transactions.push(t);
+  });
+  checkAllFraud();
+  showToast(importData.length+' transactions imported!','success');
+  importData=[];
+  document.getElementById('importPreviewWrap').style.display='none';
+}
+
+function importPhoto(e){
+  const file=e.target.files[0];
+  if(!file) return;
+  const url=URL.createObjectURL(file);
+  document.getElementById('photoPreview').innerHTML=`
+    <img src="${url}" style="max-width:100%;border-radius:8px;border:1px solid var(--border2);margin-top:8px">
+    <div style="font-size:12px;color:var(--muted);margin-top:8px">Photo stored. You can manually enter details from this document using Add Transaction.</div>
+  `;
+  showToast('Photo uploaded. Use Add Transaction to enter details.','success');
+}
+
+function downloadTemplate(){
+  const ws=XLSX.utils.json_to_sheet([
+    {sender_name:'Sunil Kumar',receiver_name:'Rajan Stores',amount:2000,type:'Debit',method:'UPI',category:'Grocery',status:'Completed',date:'2024-03-20',ref:'UTR001',note:'Sample'}
+  ]);
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Transactions');
+  XLSX.writeFile(wb,'TransactIQ_Template.xlsx');
+}
+
+// ============ EXPORTS ============
+function getFilteredForExport(){
+  let r=transactions;
+  const from=document.getElementById('rFrom').value;
+  const to=document.getElementById('rTo').value;
+  const type=document.getElementById('rType').value;
+  const status=document.getElementById('rStatus').value;
+  if(from) r=r.filter(t=>t.datetime>=from);
+  if(to) r=r.filter(t=>t.datetime<=to+'T23:59');
+  if(type) r=r.filter(t=>t.type===type);
+  if(status) r=r.filter(t=>t.status===status);
+  return r;
+}
+
+function exportExcel(){
+  const r=getFilteredForExport();
+  const data=r.map(t=>({
+    'TXN ID':t.id,'Date':fmtDT(t.datetime),'Sender':t.sender,'Receiver':t.receiver,
+    'Amount (₹)':t.amount,'Type':t.type,'Method':t.method,'Category':t.category,
+    'Status':t.status,'Ref ID':t.ref||'','Fraud Flags':t.fraudFlags.join(', ')||'None','Note':t.note||''
+  }));
+  const ws=XLSX.utils.json_to_sheet(data);
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Transactions');
+  XLSX.writeFile(wb,'TransactIQ_Report_'+new Date().toISOString().split('T')[0]+'.xlsx');
+  showToast('Excel exported!','success');
+}
+
+function exportCSV(){
+  const r=getFilteredForExport();
+  const headers=['TXN ID','Date','Sender','Receiver','Amount','Type','Method','Category','Status','Ref ID'];
+  const rows=r.map(t=>[t.id,fmtDT(t.datetime),t.sender,t.receiver,t.amount,t.type,t.method,t.category,t.status,t.ref||''].join(','));
+  const csv=[headers.join(','),...rows].join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download='TransactIQ_'+new Date().toISOString().split('T')[0]+'.csv';
+  a.click();
+  showToast('CSV exported!','success');
+}
+
+function exportCurrentView(){
+  const r=filteredTxns.length?filteredTxns:transactions;
+  const data=r.map(t=>({'TXN ID':t.id,'Date':fmtDT(t.datetime),'Sender':t.sender,'Receiver':t.receiver,'Amount':t.amount,'Type':t.type,'Method':t.method,'Status':t.status}));
+  const ws=XLSX.utils.json_to_sheet(data);
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'View');
+  XLSX.writeFile(wb,'TransactIQ_View.xlsx');
+  showToast('Current view exported!','success');
+}
+
+function exportPDF(){
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF();
+  doc.setFontSize(16);doc.text('TransactIQ — Transaction Report',14,16);
+  doc.setFontSize(10);doc.text('Generated: '+new Date().toLocaleString(),14,24);
+  const r=getFilteredForExport();
+  let y=34;
+  doc.setFontSize(8);
+  doc.text('ID',14,y);doc.text('Sender',40,y);doc.text('Amount',90,y);doc.text('Type',115,y);doc.text('Status',135,y);doc.text('Date',160,y);
+  y+=4;doc.line(14,y,196,y);y+=4;
+  r.slice(0,40).forEach(t=>{
+    if(y>280){doc.addPage();y=20}
+    doc.text(t.id.slice(0,16),14,y);
+    doc.text((t.sender||'').slice(0,20),40,y);
+    doc.text('Rs '+fmt(t.amount),90,y);
+    doc.text(t.type||'',115,y);
+    doc.text(t.status||'',135,y);
+    doc.text((t.datetime||'').slice(0,10),160,y);
+    y+=6;
+  });
+  doc.save('TransactIQ_Report.pdf');
+  showToast('PDF exported!','success');
+}
+
+// ============ VIEW TXN MODAL ============
+function viewTxn(id){
+  const t=transactions.find(x=>x.id===id);
+  if(!t) return;
+  document.getElementById('viewModalContent').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:12px;font-weight:700;text-transform:uppercase">Sender</div>
+        <div style="font-weight:700">${t.sender}</div>
+        <div style="font-size:12px;color:var(--muted)">${t.senderMobile||'No mobile'}</div>
+        <div style="font-size:12px;color:var(--muted)">${t.senderLocation||'No location'}</div>
+        <div style="font-size:11px;color:var(--dim);margin-top:4px">${t.senderAccount||''}</div>
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:12px;font-weight:700;text-transform:uppercase">Receiver</div>
+        <div style="font-weight:700">${t.receiver}</div>
+        <div style="font-size:12px;color:var(--muted)">${t.receiverMobile||'No mobile'}</div>
+        <div style="font-size:12px;color:var(--muted)">${t.receiverLocation||'No location'}</div>
+        <div style="font-size:11px;color:var(--dim);margin-top:4px">${t.receiverAccount||''}</div>
+      </div>
+    </div>
+    <div style="border-top:1px solid var(--border);margin:14px 0;padding-top:14px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+      <div><div style="font-size:11px;color:var(--muted)">Amount</div><div style="font-size:20px;font-weight:700;color:${t.type==='Credit'?'var(--cr)':'var(--db)'}">₹${fmt(t.amount)}</div></div>
+      <div><div style="font-size:11px;color:var(--muted)">Type</div><span class="badge ${typeBadge(t.type)}">${t.type}</span></div>
+      <div><div style="font-size:11px;color:var(--muted)">Status</div><span class="badge ${statusBadge(t.status)}">${t.status}</span></div>
+      <div><div style="font-size:11px;color:var(--muted)">Method</div><div style="font-weight:600">${t.method}</div></div>
+      <div><div style="font-size:11px;color:var(--muted)">Category</div><div style="font-weight:600">${t.category}</div></div>
+      <div><div style="font-size:11px;color:var(--muted)">Date & Time</div><div style="font-weight:600;font-size:12px">${fmtDT(t.datetime)}</div></div>
+    </div>
+    <div style="border-top:1px solid var(--border);margin-top:8px;padding-top:12px">
+      <div style="display:flex;gap:20px;flex-wrap:wrap">
+        <div><span style="font-size:11px;color:var(--muted)">TXN ID: </span><span class="txn-id">${t.id}</span></div>
+        <div><span style="font-size:11px;color:var(--muted)">Ref: </span><span class="txn-id">${t.ref||'—'}</span></div>
+        <div><span style="font-size:11px;color:var(--muted)">Approval: </span><span class="badge ${t.approvalStatus==='Approved'?'b-green':t.approvalStatus==='Rejected'?'b-red':'b-amber'}">${t.approvalStatus}</span></div>
+      </div>
+      ${t.note?`<div style="margin-top:10px;font-size:12px;color:var(--muted)"><b>Note:</b> ${t.note}</div>`:''}
+      ${t.fraudFlags.length?`<div style="margin-top:10px;background:#f5315d0e;border:1px solid #f5315d33;padding:10px;border-radius:8px;font-size:12px;color:var(--danger)"><b>⚠ Fraud Flags:</b> ${fraudFlagText(t.fraudFlags)}</div>`:''}
+    </div>
+  `;
+  document.getElementById('viewModal').classList.add('open');
+}
+function closeViewModal(){document.getElementById('viewModal').classList.remove('open')}
+
+// ============ UTILS ============
+function fmt(n){return Number(n).toLocaleString('en-IN')}
+function fmtDT(s){if(!s) return '—';const d=new Date(s);return d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})+' '+d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}
+function typeBadge(t){return t==='Credit'?'b-green':t==='Debit'?'b-red':t==='Transfer'?'b-blue':'b-amber'}
+function statusBadge(s){return s==='Completed'?'b-green':s==='Failed'?'b-red':'b-amber'}
+function fraudFlagText(flags){
+  return flags.map(f=>f==='large'?'Large amount (>₹40K)':f==='consec_fail'?'3+ consecutive failures':f==='rapid'?'Rapid transactions (<5 min)':f).join(', ')
+}
+function fraudFlagShort(flags){return flags.includes('large')?'Large':flags.includes('consec_fail')?'Consec Fail':flags.includes('rapid')?'Rapid':'Flag'}
+
+function showToast(msg,type='success'){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast t-'+type+' show';
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+function copyText(text){navigator.clipboard.writeText(text).then(()=>showToast('Copied: '+text,'success'))}
+function copyTxnId(id){navigator.clipboard.writeText(id).then(()=>showToast('Copied: '+id,'success'))}
+
+// Close modals on outside click
+document.addEventListener('click',function(e){
+  if(e.target.classList.contains('modal-overlay')){
+    e.target.classList.remove('open');
+  }
+});
+
+// Drag & Drop for Excel
+document.addEventListener('DOMContentLoaded',function(){
+  const dz=document.getElementById('dropZone');
+  if(dz){
+    dz.addEventListener('dragover',e=>{e.preventDefault();dz.style.borderColor='var(--accent)'});
+    dz.addEventListener('dragleave',()=>dz.style.borderColor='');
+    dz.addEventListener('drop',e=>{
+      e.preventDefault();dz.style.borderColor='';
+      const file=e.dataTransfer.files[0];
+      if(file){const dt=new DataTransfer();dt.items.add(file);document.getElementById('xlsxInput').files=dt.files;importExcel({target:{files:[file]}});}
+    });
+  }
+  updateTodaySummary();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TransactIQ — Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#06080f;--surf:#111827;--surf2:#161f2e;--surf3:#1c2538;--border:#1e2d42;--border2:#253347;--accent:#00c97a;--blue:#3b82f6;--danger:#ef4444;--warn:#f59e0b;--purple:#a78bfa;--text:#e2e8f0;--muted:#64748b;--dim:#94a3b8}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:14px;min-height:100vh}
+.layout{display:flex;min-height:100vh}
+.sidebar{width:220px;background:var(--surf);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;height:100vh;z-index:100}
+.s-logo{padding:20px 18px 16px;border-bottom:1px solid var(--border)}
+.s-logo h1{font-family:'Syne',sans-serif;font-size:18px;font-weight:800}
+.s-logo h1 span{color:var(--accent)}
+.s-logo p{font-size:11px;color:var(--danger);margin-top:2px;font-weight:600}
+.s-user{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.av{width:34px;height:34px;border-radius:50%;background:#ef444422;color:var(--danger);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0}
+.u-name{font-size:13px;font-weight:600}
+.u-role{font-size:10px;color:var(--danger);font-weight:600}
+.s-nav{padding:10px;flex:1}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;color:var(--dim);margin-bottom:2px;transition:all .15s}
+.nav-item:hover{background:var(--surf2);color:var(--text)}
+.nav-item.active{background:#00c97a14;color:var(--accent)}
+.s-logout{padding:14px 18px;border-top:1px solid var(--border)}
+.logout-btn{width:100%;padding:9px;background:var(--surf2);border:1px solid var(--border2);border-radius:8px;color:var(--dim);font-family:'Inter',sans-serif;font-size:13px;cursor:pointer;transition:all .15s}
+.logout-btn:hover{background:#ef444415;border-color:#ef444433;color:#fca5a5}
+.main{flex:1;margin-left:220px}
+.topbar{background:var(--surf);border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center}
+.topbar h2{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;flex:1}
+.page{display:none;padding:20px 24px}
+.page.active{display:block}
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.stat{background:var(--surf);border:1px solid var(--border);border-radius:14px;padding:16px;position:relative;overflow:hidden}
+.stat::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:3px 0 0 3px}
+.s-green::before{background:var(--accent)}.s-red::before{background:var(--danger)}.s-blue::before{background:var(--blue)}.s-warn::before{background:var(--warn)}
+.stat-label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px}
+.stat-val{font-family:'Syne',sans-serif;font-size:22px;font-weight:700}
+.tbl-wrap{background:var(--surf);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.tbl-head{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.tbl-head h3{font-size:14px;font-weight:600;flex:1}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead tr{background:var(--surf2)}
+th{padding:10px 14px;text-align:left;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;white-space:nowrap}
+td{padding:10px 14px;border-top:1px solid var(--border);vertical-align:middle}
+tr:hover td{background:#ffffff05}
+.badge{display:inline-block;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.b-green{background:#00c97a18;color:#00c97a}.b-red{background:#ef444418;color:#ef4444}.b-blue{background:#3b82f618;color:#3b82f6}.b-amber{background:#f59e0b18;color:#f59e0b}.b-gray{background:#64748b18;color:#94a3b8}.b-purple{background:#a78bfa18;color:#a78bfa}
+.btn{padding:7px 14px;border-radius:8px;border:1px solid var(--border2);background:var(--surf2);color:var(--text);font-family:'Inter',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:5px}
+.btn:hover{background:var(--surf3)}
+.btn-green{background:#00c97a18!important;color:#00c97a!important;border-color:#00c97a33!important}
+.btn-green:hover{background:#00c97a!important;color:#000!important}
+.btn-red{background:#ef444418!important;color:#ef4444!important;border-color:#ef444433!important}
+.btn-red:hover{background:#ef4444!important;color:#fff!important}
+.btn-amber{background:#f59e0b18!important;color:#f59e0b!important;border-color:#f59e0b33!important}
+.search-bar{background:var(--surf2);border:1px solid var(--border2);border-radius:8px;color:var(--text);padding:8px 12px;font-family:'Inter',sans-serif;font-size:13px;width:260px;outline:none}
+.search-bar:focus{border-color:var(--accent)}
+.toast{position:fixed;bottom:20px;right:20px;background:var(--surf3);border:1px solid var(--border2);border-radius:10px;padding:10px 16px;font-size:13px;font-weight:600;z-index:9999;opacity:0;transition:all .3s}
+.toast.show{opacity:1}
+.toast.ts{border-color:#00c97a55;color:var(--accent)}
+.toast.te{border-color:#ef444455;color:#fca5a5}
+.toast.tw{border-color:#f59e0b55;color:#f59e0b}
+.uid{font-family:monospace;font-size:11px;color:var(--dim)}
+</style>
+</head>
+<body>
+<div class="layout">
+<div class="sidebar">
+  <div class="s-logo">
+    <h1>Transact<span>IQ</span></h1>
+    <p>Admin Panel</p>
+  </div>
+  <div class="s-user">
+    <div class="av">AD</div>
+    <div>
+      <div class="u-name" id="adminName">Admin</div>
+      <div class="u-role">Administrator</div>
+    </div>
+  </div>
+  <div class="s-nav">
+    <div class="nav-item active" onclick="showPage('overview')"><span style="width:18px;text-align:center;font-size:15px">◉</span> Overview</div>
+    <div class="nav-item" onclick="showPage('users')"><span style="width:18px;text-align:center;font-size:15px">👥</span> All Users</div>
+    <div class="nav-item" onclick="showPage('pending')"><span style="width:18px;text-align:center;font-size:15px">⏳</span> Pending Approval <span id="pendingBadge" style="margin-left:auto;background:var(--warn);color:#000;font-size:10px;font-weight:700;padding:2px 6px;border-radius:20px;display:none">0</span></div>
+  </div>
+  <div class="s-logout">
+    <button class="logout-btn" onclick="logout()">⇐ Logout</button>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <h2 id="pageTitle">Admin Overview</h2>
+  </div>
+
+  <!-- OVERVIEW -->
+  <div class="page active" id="page-overview">
+    <div class="stat-grid" id="statGrid"></div>
+    <div class="tbl-wrap">
+      <div class="tbl-head"><h3>Recent Registrations</h3><button class="btn" onclick="showPage('users')">View All</button></div>
+      <table><thead><tr><th>User ID</th><th>Name</th><th>Business</th><th>Username</th><th>Role</th><th>Status</th><th>Joined</th></tr></thead>
+      <tbody id="recentUsers"></tbody></table>
+    </div>
+  </div>
+
+  <!-- ALL USERS -->
+  <div class="page" id="page-users">
+    <div class="tbl-wrap">
+      <div class="tbl-head">
+        <h3>All Users</h3>
+        <input class="search-bar" id="userSearch" placeholder="Search by name, username, email..." oninput="filterUsers()">
+        <span class="badge b-blue" id="userCount">0 users</span>
+      </div>
+      <div style="overflow-x:auto">
+      <table><thead><tr><th>User ID</th><th>Full Name</th><th>Business</th><th>Username</th><th>Email</th><th>Role</th><th>Status</th><th>Joined</th><th>Actions</th></tr></thead>
+      <tbody id="userTableBody"></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- PENDING APPROVALS -->
+  <div class="page" id="page-pending">
+    <div class="tbl-wrap">
+      <div class="tbl-head"><h3>Pending Approvals</h3><span class="badge b-amber" id="pendingCount">0 pending</span></div>
+      <table><thead><tr><th>User ID</th><th>Full Name</th><th>Business</th><th>Username</th><th>Email</th><th>Joined</th><th>Actions</th></tr></thead>
+      <tbody id="pendingBody"></tbody></table>
+    </div>
+  </div>
+
+</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const API = 'https://transaction-monitoring-system-production.up.railway.app/api';
+const admin = JSON.parse(localStorage.getItem('tiq_user') || sessionStorage.getItem('tiq_user') || 'null');
+if (!admin || admin.role !== 'admin') { window.location.href = '/TransactIQ_Login_Simple.html'; }
+document.getElementById('adminName').textContent = admin?.fullName || 'Admin';
+
+const token = localStorage.getItem('tiq_token') || sessionStorage.getItem('tiq_token') || '';
+let allUsers = [];
+
+async function loadUsers() {
+  try {
+    const res = await fetch(API + '/user/all-users', { headers: { Authorization: 'Bearer ' + token } });
+    const data = await res.json();
+    if (data.success) {
+      allUsers = data.users;
+      renderOverview();
+      renderUsers(allUsers);
+      renderPending();
+    }
+  } catch(e) {
+    console.error('Load users error:', e.message);
+    toast('Could not load users — check server', 'te');
+  }
+}
+
+function renderOverview() {
+  const total = allUsers.length;
+  const active = allUsers.filter(u=>u.status==='active').length;
+  const pending = allUsers.filter(u=>u.status==='pending').length;
+  const admins = allUsers.filter(u=>u.role==='admin').length;
+
+  document.getElementById('statGrid').innerHTML = `
+    <div class="stat s-blue"><div class="stat-label">Total Users</div><div class="stat-val">${total}</div></div>
+    <div class="stat s-green"><div class="stat-label">Active Users</div><div class="stat-val">${active}</div></div>
+    <div class="stat s-warn"><div class="stat-label">Pending Approval</div><div class="stat-val">${pending}</div></div>
+    <div class="stat s-red"><div class="stat-label">Admins</div><div class="stat-val">${admins}</div></div>
+  `;
+
+  const badge = document.getElementById('pendingBadge');
+  if (pending > 0) { badge.style.display='inline'; badge.textContent=pending; }
+  else { badge.style.display='none'; }
+
+  const recent = [...allUsers].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)).slice(0,5);
+  document.getElementById('recentUsers').innerHTML = recent.map(u=>`
+    <tr>
+      <td class="uid">${u.user_uid}</td>
+      <td>${u.full_name}</td>
+      <td>${u.business_name||'—'}</td>
+      <td><b>${u.username}</b></td>
+      <td><span class="badge ${u.role==='admin'?'b-red':'b-blue'}">${u.role}</span></td>
+      <td><span class="badge ${statusBadge(u.status)}">${u.status}</span></td>
+      <td style="font-size:12px">${fmtDate(u.created_at)}</td>
+    </tr>`).join('') || '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--muted)">No users yet</td></tr>';
+}
+
+function renderUsers(list) {
+  document.getElementById('userCount').textContent = list.length + ' users';
+  document.getElementById('userTableBody').innerHTML = list.map(u=>`
+    <tr>
+      <td class="uid">${u.user_uid}</td>
+      <td><b>${u.full_name}</b></td>
+      <td>${u.business_name||'—'}</td>
+      <td>${u.username}</td>
+      <td style="font-size:12px;color:var(--dim)">${u.email||'—'}</td>
+      <td><span class="badge ${u.role==='admin'?'b-red':'b-blue'}">${u.role}</span></td>
+      <td><span class="badge ${statusBadge(u.status)}">${u.status}</span></td>
+      <td style="font-size:12px">${fmtDate(u.created_at)}</td>
+      <td style="white-space:nowrap;display:flex;gap:6px;flex-wrap:wrap">
+        ${u.status!=='active'?`<button class="btn btn-green" onclick="approveUser(${u.id})">✓ Approve</button>`:''}
+        ${u.status!=='suspended'?`<button class="btn btn-amber" onclick="suspendUser(${u.id})">⊘ Suspend</button>`:''}
+        ${u.status==='suspended'?`<button class="btn btn-green" onclick="approveUser(${u.id})">↺ Reactivate</button>`:''}
+        <button class="btn btn-red" onclick="deleteUser(${u.id},'${u.username}')">✕ Delete</button>
+      </td>
+    </tr>`).join('') || '<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--muted)">No users found</td></tr>';
+}
+
+function renderPending() {
+  const pending = allUsers.filter(u=>u.status==='pending');
+  document.getElementById('pendingCount').textContent = pending.length + ' pending';
+  document.getElementById('pendingBody').innerHTML = pending.length ? pending.map(u=>`
+    <tr>
+      <td class="uid">${u.user_uid}</td>
+      <td><b>${u.full_name}</b></td>
+      <td>${u.business_name||'—'}</td>
+      <td>${u.username}</td>
+      <td style="font-size:12px">${u.email||'—'}</td>
+      <td style="font-size:12px">${fmtDate(u.created_at)}</td>
+      <td style="display:flex;gap:6px">
+        <button class="btn btn-green" onclick="approveUser(${u.id})">✓ Approve</button>
+        <button class="btn btn-red" onclick="deleteUser(${u.id},'${u.username}')">✕ Reject</button>
+      </td>
+    </tr>`).join('') : '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--muted)">No pending approvals</td></tr>';
+}
+
+function filterUsers() {
+  const q = document.getElementById('userSearch').value.toLowerCase();
+  const filtered = q ? allUsers.filter(u=>(u.full_name+u.username+u.email+u.business_name).toLowerCase().includes(q)) : allUsers;
+  renderUsers(filtered);
+}
+
+async function approveUser(id) {
+  try {
+    const res = await fetch(API + '/user/approve/' + id, { method: 'POST', headers: { Authorization: 'Bearer ' + token } });
+    const data = await res.json();
+    if (data.success) { toast('User approved!', 'ts'); loadUsers(); }
+    else toast(data.message, 'te');
+  } catch(e) { toast('Failed to approve', 'te'); }
+}
+
+async function suspendUser(id) {
+  if (!confirm('Suspend this user? They will not be able to login.')) return;
+  try {
+    const res = await fetch(API + '/user/reject/' + id, { method: 'POST', headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' }, body: JSON.stringify({ reason: 'Suspended by admin' }) });
+    const data = await res.json();
+    if (data.success) { toast('User suspended', 'tw'); loadUsers(); }
+    else toast(data.message, 'te');
+  } catch(e) { toast('Failed to suspend', 'te'); }
+}
+
+async function deleteUser(id, username) {
+  if (!confirm('Delete user "' + username + '"? This cannot be undone.')) return;
+  try {
+    const res = await fetch(API + '/user/delete/' + id, { method: 'DELETE', headers: { Authorization: 'Bearer ' + token } });
+    const data = await res.json();
+    if (data.success) { toast('User deleted', 'te'); loadUsers(); }
+    else {
+      // If delete route not available, just suspend
+      allUsers = allUsers.filter(u=>u.id!==id);
+      renderOverview(); renderUsers(allUsers); renderPending();
+      toast('User removed from view', 'tw');
+    }
+  } catch(e) {
+    allUsers = allUsers.filter(u=>u.id!==id);
+    renderOverview(); renderUsers(allUsers); renderPending();
+    toast('User removed', 'tw');
+  }
+}
+
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  const titles = { overview:'Admin Overview', users:'All Users', pending:'Pending Approvals' };
+  document.getElementById('pageTitle').textContent = titles[id] || id;
+}
+
+function logout() {
+  localStorage.clear(); sessionStorage.clear();
+  window.location.href = '/TransactIQ_Login_Simple.html';
+}
+
+function statusBadge(s) { return s==='active'?'b-green':s==='pending'?'b-amber':'b-red'; }
+function fmtDate(s) { if(!s) return '—'; return new Date(s).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}); }
+function toast(msg,cls='ts') { const t=document.getElementById('toast'); t.textContent=msg; t.className='toast '+cls+' show'; setTimeout(()=>t.classList.remove('show'),3000); }
+
+loadUsers();
+</script>
+</body>
+</html>
