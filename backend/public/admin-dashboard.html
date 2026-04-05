@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-:root{--bg:#06080f;--surf:#111827;--surf2:#161f2e;--surf3:#1c2538;--border:#1e2d42;--border2:#253347;--accent:#00c97a;--blue:#3b82f6;--danger:#ef4444;--warn:#f59e0b;--purple:#a78bfa;--text:#e2e8f0;--muted:#64748b;--dim:#94a3b8}
+:root{--bg:#06080f;--surf:#111827;--surf2:#161f2e;--surf3:#1c2538;--border:#1e2d42;--border2:#253347;--accent:#00c97a;--blue:#3b82f6;--danger:#ef4444;--warn:#f59e0b;--text:#e2e8f0;--muted:#64748b;--dim:#94a3b8}
 body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:14px;min-height:100vh}
 .layout{display:flex;min-height:100vh}
 .sidebar{width:220px;background:var(--surf);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;height:100vh;z-index:100}
@@ -24,8 +24,8 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 .nav-item:hover{background:var(--surf2);color:var(--text)}
 .nav-item.active{background:#00c97a14;color:var(--accent)}
 .s-logout{padding:14px 18px;border-top:1px solid var(--border)}
-.logout-btn{width:100%;padding:9px;background:var(--surf2);border:1px solid var(--border2);border-radius:8px;color:var(--dim);font-family:'Inter',sans-serif;font-size:13px;cursor:pointer;transition:all .15s}
-.logout-btn:hover{background:#ef444415;border-color:#ef444433;color:#fca5a5}
+.logout-btn{width:100%;padding:9px;background:var(--surf2);border:1px solid var(--border2);border-radius:8px;color:var(--dim);font-family:'Inter',sans-serif;font-size:13px;cursor:pointer}
+.logout-btn:hover{background:#ef444415;color:#fca5a5}
 .main{flex:1;margin-left:220px}
 .topbar{background:var(--surf);border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center}
 .topbar h2{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;flex:1}
@@ -46,9 +46,8 @@ th{padding:10px 14px;text-align:left;font-size:11px;font-weight:600;color:var(--
 td{padding:10px 14px;border-top:1px solid var(--border);vertical-align:middle}
 tr:hover td{background:#ffffff05}
 .badge{display:inline-block;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:600}
-.b-green{background:#00c97a18;color:#00c97a}.b-red{background:#ef444418;color:#ef4444}.b-blue{background:#3b82f618;color:#3b82f6}.b-amber{background:#f59e0b18;color:#f59e0b}.b-gray{background:#64748b18;color:#94a3b8}.b-purple{background:#a78bfa18;color:#a78bfa}
+.b-green{background:#00c97a18;color:#00c97a}.b-red{background:#ef444418;color:#ef4444}.b-blue{background:#3b82f618;color:#3b82f6}.b-amber{background:#f59e0b18;color:#f59e0b}.b-gray{background:#64748b18;color:#94a3b8}
 .btn{padding:7px 14px;border-radius:8px;border:1px solid var(--border2);background:var(--surf2);color:var(--text);font-family:'Inter',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:5px}
-.btn:hover{background:var(--surf3)}
 .btn-green{background:#00c97a18!important;color:#00c97a!important;border-color:#00c97a33!important}
 .btn-green:hover{background:#00c97a!important;color:#000!important}
 .btn-red{background:#ef444418!important;color:#ef4444!important;border-color:#ef444433!important}
@@ -56,6 +55,7 @@ tr:hover td{background:#ffffff05}
 .btn-amber{background:#f59e0b18!important;color:#f59e0b!important;border-color:#f59e0b33!important}
 .search-bar{background:var(--surf2);border:1px solid var(--border2);border-radius:8px;color:var(--text);padding:8px 12px;font-family:'Inter',sans-serif;font-size:13px;width:260px;outline:none}
 .search-bar:focus{border-color:var(--accent)}
+.err-box{background:#ef444415;border:1px solid #ef444433;color:#fca5a5;padding:12px 16px;border-radius:10px;margin-bottom:16px;font-size:13px}
 .toast{position:fixed;bottom:20px;right:20px;background:var(--surf3);border:1px solid var(--border2);border-radius:10px;padding:10px 16px;font-size:13px;font-weight:600;z-index:9999;opacity:0;transition:all .3s}
 .toast.show{opacity:1}
 .toast.ts{border-color:#00c97a55;color:var(--accent)}
@@ -67,58 +67,51 @@ tr:hover td{background:#ffffff05}
 <body>
 <div class="layout">
 <div class="sidebar">
-  <div class="s-logo">
-    <h1>Transact<span>IQ</span></h1>
-    <p>Admin Panel</p>
-  </div>
+  <div class="s-logo"><h1>Transact<span>IQ</span></h1><p>Admin Panel</p></div>
   <div class="s-user">
     <div class="av">AD</div>
-    <div>
-      <div class="u-name" id="adminName">Admin</div>
-      <div class="u-role">Administrator</div>
-    </div>
+    <div><div class="u-name" id="adminName">Admin</div><div class="u-role">Administrator</div></div>
   </div>
   <div class="s-nav">
-    <div class="nav-item active" onclick="showPage('overview')"><span style="width:18px;text-align:center;font-size:15px">◉</span> Overview</div>
-    <div class="nav-item" onclick="showPage('users')"><span style="width:18px;text-align:center;font-size:15px">👥</span> All Users</div>
-    <div class="nav-item" onclick="showPage('pending')"><span style="width:18px;text-align:center;font-size:15px">⏳</span> Pending Approval <span id="pendingBadge" style="margin-left:auto;background:var(--warn);color:#000;font-size:10px;font-weight:700;padding:2px 6px;border-radius:20px;display:none">0</span></div>
+    <div class="nav-item active" onclick="showPage('overview')">Overview</div>
+    <div class="nav-item" onclick="showPage('users')">All Users</div>
+    <div class="nav-item" onclick="showPage('pending')">Pending Approval <span id="pendingBadge" style="margin-left:auto;background:var(--warn);color:#000;font-size:10px;font-weight:700;padding:2px 6px;border-radius:20px;display:none">0</span></div>
   </div>
-  <div class="s-logout">
-    <button class="logout-btn" onclick="logout()">⇐ Logout</button>
-  </div>
+  <div class="s-logout"><button class="logout-btn" onclick="logout()">Logout</button></div>
 </div>
 
 <div class="main">
-  <div class="topbar">
-    <h2 id="pageTitle">Admin Overview</h2>
-  </div>
+  <div class="topbar"><h2 id="pageTitle">Admin Overview</h2></div>
 
-  <!-- OVERVIEW -->
   <div class="page active" id="page-overview">
-    <div class="stat-grid" id="statGrid"></div>
+    <div id="overviewErr" style="display:none" class="err-box"></div>
+    <div class="stat-grid" id="statGrid">
+      <div class="stat s-blue"><div class="stat-label">Total Users</div><div class="stat-val" id="stTotal">—</div></div>
+      <div class="stat s-green"><div class="stat-label">Active Users</div><div class="stat-val" id="stActive">—</div></div>
+      <div class="stat s-warn"><div class="stat-label">Pending</div><div class="stat-val" id="stPending">—</div></div>
+      <div class="stat s-red"><div class="stat-label">Admins</div><div class="stat-val" id="stAdmins">—</div></div>
+    </div>
     <div class="tbl-wrap">
       <div class="tbl-head"><h3>Recent Registrations</h3><button class="btn" onclick="showPage('users')">View All</button></div>
       <table><thead><tr><th>User ID</th><th>Name</th><th>Business</th><th>Username</th><th>Role</th><th>Status</th><th>Joined</th></tr></thead>
-      <tbody id="recentUsers"></tbody></table>
+      <tbody id="recentUsers"><tr><td colspan="7" style="text-align:center;padding:20px;color:var(--muted)">Loading...</td></tr></tbody></table>
     </div>
   </div>
 
-  <!-- ALL USERS -->
   <div class="page" id="page-users">
     <div class="tbl-wrap">
       <div class="tbl-head">
         <h3>All Users</h3>
-        <input class="search-bar" id="userSearch" placeholder="Search by name, username, email..." oninput="filterUsers()">
+        <input class="search-bar" id="userSearch" placeholder="Search name, username, email..." oninput="filterUsers()">
         <span class="badge b-blue" id="userCount">0 users</span>
       </div>
       <div style="overflow-x:auto">
       <table><thead><tr><th>User ID</th><th>Full Name</th><th>Business</th><th>Username</th><th>Email</th><th>Role</th><th>Status</th><th>Joined</th><th>Actions</th></tr></thead>
-      <tbody id="userTableBody"></tbody></table>
+      <tbody id="userTableBody"><tr><td colspan="9" style="text-align:center;padding:20px;color:var(--muted)">Loading...</td></tr></tbody></table>
       </div>
     </div>
   </div>
 
-  <!-- PENDING APPROVALS -->
   <div class="page" id="page-pending">
     <div class="tbl-wrap">
       <div class="tbl-head"><h3>Pending Approvals</h3><span class="badge b-amber" id="pendingCount">0 pending</span></div>
@@ -126,154 +119,175 @@ tr:hover td{background:#ffffff05}
       <tbody id="pendingBody"></tbody></table>
     </div>
   </div>
-
 </div>
 </div>
 <div class="toast" id="toast"></div>
 
 <script>
-const API = 'https://transaction-monitoring-system-production.up.railway.app/api';
-const admin = JSON.parse(localStorage.getItem('tiq_user') || sessionStorage.getItem('tiq_user') || 'null');
-if (!admin || admin.role !== 'admin') { window.location.href = '/TransactIQ_Login_Simple.html'; }
-document.getElementById('adminName').textContent = admin?.fullName || 'Admin';
+var API = 'https://transaction-monitoring-system-production.up.railway.app/api';
+var admin = JSON.parse(localStorage.getItem('tiq_user') || sessionStorage.getItem('tiq_user') || 'null');
+var token = localStorage.getItem('tiq_token') || sessionStorage.getItem('tiq_token') || '';
 
-const token = localStorage.getItem('tiq_token') || sessionStorage.getItem('tiq_token') || '';
-let allUsers = [];
+if (!admin || admin.role !== 'admin') {
+  window.location.href = '/TransactIQ_Login_Simple.html';
+}
+document.getElementById('adminName').textContent = admin ? (admin.fullName || admin.businessName || 'Admin') : 'Admin';
 
-async function loadUsers() {
-  try {
-    const res = await fetch(API + '/user/all-users', { headers: { Authorization: 'Bearer ' + token } });
-    const data = await res.json();
+var allUsers = [];
+
+function loadUsers() {
+  fetch(API + '/user/all-users', {
+    method: 'GET',
+    headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' }
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
     if (data.success) {
-      allUsers = data.users;
+      allUsers = data.users || [];
       renderOverview();
       renderUsers(allUsers);
       renderPending();
+    } else {
+      showOverviewErr('Could not load users: ' + (data.message || 'Unknown error'));
     }
-  } catch(e) {
-    console.error('Load users error:', e.message);
-    toast('Could not load users — check server', 'te');
-  }
+  })
+  .catch(function(e) {
+    showOverviewErr('Server connection failed. Make sure Railway is running.');
+  });
+}
+
+function showOverviewErr(msg) {
+  var el = document.getElementById('overviewErr');
+  el.style.display = 'block';
+  el.textContent = msg;
 }
 
 function renderOverview() {
-  const total = allUsers.length;
-  const active = allUsers.filter(u=>u.status==='active').length;
-  const pending = allUsers.filter(u=>u.status==='pending').length;
-  const admins = allUsers.filter(u=>u.role==='admin').length;
+  var total = allUsers.length;
+  var active = allUsers.filter(function(u){ return u.status === 'active'; }).length;
+  var pending = allUsers.filter(function(u){ return u.status === 'pending'; }).length;
+  var admins = allUsers.filter(function(u){ return u.role === 'admin'; }).length;
 
-  document.getElementById('statGrid').innerHTML = `
-    <div class="stat s-blue"><div class="stat-label">Total Users</div><div class="stat-val">${total}</div></div>
-    <div class="stat s-green"><div class="stat-label">Active Users</div><div class="stat-val">${active}</div></div>
-    <div class="stat s-warn"><div class="stat-label">Pending Approval</div><div class="stat-val">${pending}</div></div>
-    <div class="stat s-red"><div class="stat-label">Admins</div><div class="stat-val">${admins}</div></div>
-  `;
+  document.getElementById('stTotal').textContent = total;
+  document.getElementById('stActive').textContent = active;
+  document.getElementById('stPending').textContent = pending;
+  document.getElementById('stAdmins').textContent = admins;
 
-  const badge = document.getElementById('pendingBadge');
-  if (pending > 0) { badge.style.display='inline'; badge.textContent=pending; }
-  else { badge.style.display='none'; }
+  var badge = document.getElementById('pendingBadge');
+  if (pending > 0) { badge.style.display = 'inline'; badge.textContent = pending; }
+  else { badge.style.display = 'none'; }
 
-  const recent = [...allUsers].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)).slice(0,5);
-  document.getElementById('recentUsers').innerHTML = recent.map(u=>`
-    <tr>
-      <td class="uid">${u.user_uid}</td>
-      <td>${u.full_name}</td>
-      <td>${u.business_name||'—'}</td>
-      <td><b>${u.username}</b></td>
-      <td><span class="badge ${u.role==='admin'?'b-red':'b-blue'}">${u.role}</span></td>
-      <td><span class="badge ${statusBadge(u.status)}">${u.status}</span></td>
-      <td style="font-size:12px">${fmtDate(u.created_at)}</td>
-    </tr>`).join('') || '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--muted)">No users yet</td></tr>';
+  var recent = allUsers.slice().sort(function(a,b){ return new Date(b.created_at) - new Date(a.created_at); }).slice(0,5);
+  document.getElementById('recentUsers').innerHTML = recent.length ? recent.map(function(u){
+    return '<tr>' +
+      '<td class="uid">' + (u.user_uid||'—') + '</td>' +
+      '<td>' + (u.full_name||'—') + '</td>' +
+      '<td>' + (u.business_name||'—') + '</td>' +
+      '<td><b>' + (u.username||'—') + '</b></td>' +
+      '<td><span class="badge ' + (u.role==='admin'?'b-red':'b-blue') + '">' + (u.role||'user') + '</span></td>' +
+      '<td><span class="badge ' + statusBadge(u.status) + '">' + (u.status||'—') + '</span></td>' +
+      '<td style="font-size:12px">' + fmtDate(u.created_at) + '</td>' +
+      '</tr>';
+  }).join('') : '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--muted)">No users yet</td></tr>';
 }
 
 function renderUsers(list) {
   document.getElementById('userCount').textContent = list.length + ' users';
-  document.getElementById('userTableBody').innerHTML = list.map(u=>`
-    <tr>
-      <td class="uid">${u.user_uid}</td>
-      <td><b>${u.full_name}</b></td>
-      <td>${u.business_name||'—'}</td>
-      <td>${u.username}</td>
-      <td style="font-size:12px;color:var(--dim)">${u.email||'—'}</td>
-      <td><span class="badge ${u.role==='admin'?'b-red':'b-blue'}">${u.role}</span></td>
-      <td><span class="badge ${statusBadge(u.status)}">${u.status}</span></td>
-      <td style="font-size:12px">${fmtDate(u.created_at)}</td>
-      <td style="white-space:nowrap;display:flex;gap:6px;flex-wrap:wrap">
-        ${u.status!=='active'?`<button class="btn btn-green" onclick="approveUser(${u.id})">✓ Approve</button>`:''}
-        ${u.status!=='suspended'?`<button class="btn btn-amber" onclick="suspendUser(${u.id})">⊘ Suspend</button>`:''}
-        ${u.status==='suspended'?`<button class="btn btn-green" onclick="approveUser(${u.id})">↺ Reactivate</button>`:''}
-        <button class="btn btn-red" onclick="deleteUser(${u.id},'${u.username}')">✕ Delete</button>
-      </td>
-    </tr>`).join('') || '<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--muted)">No users found</td></tr>';
+  document.getElementById('userTableBody').innerHTML = list.length ? list.map(function(u){
+    var actions = '';
+    if (u.status !== 'active') actions += '<button class="btn btn-green" onclick="approveUser(' + u.id + ')">Approve</button> ';
+    if (u.status !== 'suspended') actions += '<button class="btn btn-amber" onclick="suspendUser(' + u.id + ')">Suspend</button> ';
+    if (u.status === 'suspended') actions += '<button class="btn btn-green" onclick="approveUser(' + u.id + ')">Reactivate</button> ';
+    actions += '<button class="btn btn-red" onclick="deleteUser(' + u.id + ',\'' + u.username + '\')">Delete</button>';
+    return '<tr>' +
+      '<td class="uid">' + (u.user_uid||'—') + '</td>' +
+      '<td><b>' + (u.full_name||'—') + '</b></td>' +
+      '<td>' + (u.business_name||'—') + '</td>' +
+      '<td>' + (u.username||'—') + '</td>' +
+      '<td style="font-size:12px;color:var(--dim)">' + (u.email||'—') + '</td>' +
+      '<td><span class="badge ' + (u.role==='admin'?'b-red':'b-blue') + '">' + (u.role||'user') + '</span></td>' +
+      '<td><span class="badge ' + statusBadge(u.status) + '">' + (u.status||'—') + '</span></td>' +
+      '<td style="font-size:12px">' + fmtDate(u.created_at) + '</td>' +
+      '<td style="display:flex;gap:6px;flex-wrap:wrap">' + actions + '</td>' +
+      '</tr>';
+  }).join('') : '<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--muted)">No users found</td></tr>';
 }
 
 function renderPending() {
-  const pending = allUsers.filter(u=>u.status==='pending');
+  var pending = allUsers.filter(function(u){ return u.status === 'pending'; });
   document.getElementById('pendingCount').textContent = pending.length + ' pending';
-  document.getElementById('pendingBody').innerHTML = pending.length ? pending.map(u=>`
-    <tr>
-      <td class="uid">${u.user_uid}</td>
-      <td><b>${u.full_name}</b></td>
-      <td>${u.business_name||'—'}</td>
-      <td>${u.username}</td>
-      <td style="font-size:12px">${u.email||'—'}</td>
-      <td style="font-size:12px">${fmtDate(u.created_at)}</td>
-      <td style="display:flex;gap:6px">
-        <button class="btn btn-green" onclick="approveUser(${u.id})">✓ Approve</button>
-        <button class="btn btn-red" onclick="deleteUser(${u.id},'${u.username}')">✕ Reject</button>
-      </td>
-    </tr>`).join('') : '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--muted)">No pending approvals</td></tr>';
+  document.getElementById('pendingBody').innerHTML = pending.length ? pending.map(function(u){
+    return '<tr>' +
+      '<td class="uid">' + (u.user_uid||'—') + '</td>' +
+      '<td><b>' + (u.full_name||'—') + '</b></td>' +
+      '<td>' + (u.business_name||'—') + '</td>' +
+      '<td>' + (u.username||'—') + '</td>' +
+      '<td style="font-size:12px">' + (u.email||'—') + '</td>' +
+      '<td style="font-size:12px">' + fmtDate(u.created_at) + '</td>' +
+      '<td style="display:flex;gap:6px">' +
+        '<button class="btn btn-green" onclick="approveUser(' + u.id + ')">Approve</button>' +
+        '<button class="btn btn-red" onclick="deleteUser(' + u.id + ',\'' + u.username + '\')">Reject</button>' +
+      '</td></tr>';
+  }).join('') : '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--muted)">No pending approvals</td></tr>';
 }
 
 function filterUsers() {
-  const q = document.getElementById('userSearch').value.toLowerCase();
-  const filtered = q ? allUsers.filter(u=>(u.full_name+u.username+u.email+u.business_name).toLowerCase().includes(q)) : allUsers;
+  var q = document.getElementById('userSearch').value.toLowerCase();
+  var filtered = q ? allUsers.filter(function(u){
+    return ((u.full_name||'')+(u.username||'')+(u.email||'')+(u.business_name||'')).toLowerCase().indexOf(q) > -1;
+  }) : allUsers;
   renderUsers(filtered);
 }
 
-async function approveUser(id) {
-  try {
-    const res = await fetch(API + '/user/approve/' + id, { method: 'POST', headers: { Authorization: 'Bearer ' + token } });
-    const data = await res.json();
-    if (data.success) { toast('User approved!', 'ts'); loadUsers(); }
-    else toast(data.message, 'te');
-  } catch(e) { toast('Failed to approve', 'te'); }
+function approveUser(id) {
+  fetch(API + '/user/approve/' + id, { method: 'POST', headers: { 'Authorization': 'Bearer ' + token } })
+  .then(function(r){ return r.json(); })
+  .then(function(data){
+    if (data.success) { showToast('User approved!', 'ts'); loadUsers(); }
+    else showToast(data.message || 'Failed', 'te');
+  })
+  .catch(function(){ showToast('Failed to approve', 'te'); });
 }
 
-async function suspendUser(id) {
-  if (!confirm('Suspend this user? They will not be able to login.')) return;
-  try {
-    const res = await fetch(API + '/user/reject/' + id, { method: 'POST', headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' }, body: JSON.stringify({ reason: 'Suspended by admin' }) });
-    const data = await res.json();
-    if (data.success) { toast('User suspended', 'tw'); loadUsers(); }
-    else toast(data.message, 'te');
-  } catch(e) { toast('Failed to suspend', 'te'); }
+function suspendUser(id) {
+  if (!confirm('Suspend this user?')) return;
+  fetch(API + '/user/reject/' + id, {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ reason: 'Suspended by admin' })
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data){
+    if (data.success) { showToast('User suspended', 'tw'); loadUsers(); }
+    else showToast(data.message || 'Failed', 'te');
+  })
+  .catch(function(){ showToast('Failed to suspend', 'te'); });
 }
 
-async function deleteUser(id, username) {
-  if (!confirm('Delete user "' + username + '"? This cannot be undone.')) return;
-  try {
-    const res = await fetch(API + '/user/delete/' + id, { method: 'DELETE', headers: { Authorization: 'Bearer ' + token } });
-    const data = await res.json();
-    if (data.success) { toast('User deleted', 'te'); loadUsers(); }
+function deleteUser(id, username) {
+  if (!confirm('Delete user "' + username + '"? Cannot be undone.')) return;
+  fetch(API + '/user/delete/' + id, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token } })
+  .then(function(r){ return r.json(); })
+  .then(function(data){
+    if (data.success) { showToast('User deleted', 'te'); loadUsers(); }
     else {
-      // If delete route not available, just suspend
-      allUsers = allUsers.filter(u=>u.id!==id);
+      allUsers = allUsers.filter(function(u){ return u.id !== id; });
       renderOverview(); renderUsers(allUsers); renderPending();
-      toast('User removed from view', 'tw');
+      showToast('User removed', 'tw');
     }
-  } catch(e) {
-    allUsers = allUsers.filter(u=>u.id!==id);
+  })
+  .catch(function(){
+    allUsers = allUsers.filter(function(u){ return u.id !== id; });
     renderOverview(); renderUsers(allUsers); renderPending();
-    toast('User removed', 'tw');
-  }
+    showToast('User removed', 'tw');
+  });
 }
 
 function showPage(id) {
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  document.getElementById('page-'+id).classList.add('active');
-  const titles = { overview:'Admin Overview', users:'All Users', pending:'Pending Approvals' };
+  document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
+  document.querySelectorAll('.nav-item').forEach(function(n){ n.classList.remove('active'); });
+  document.getElementById('page-' + id).classList.add('active');
+  var titles = { overview: 'Admin Overview', users: 'All Users', pending: 'Pending Approvals' };
   document.getElementById('pageTitle').textContent = titles[id] || id;
 }
 
@@ -282,9 +296,13 @@ function logout() {
   window.location.href = '/TransactIQ_Login_Simple.html';
 }
 
-function statusBadge(s) { return s==='active'?'b-green':s==='pending'?'b-amber':'b-red'; }
-function fmtDate(s) { if(!s) return '—'; return new Date(s).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}); }
-function toast(msg,cls='ts') { const t=document.getElementById('toast'); t.textContent=msg; t.className='toast '+cls+' show'; setTimeout(()=>t.classList.remove('show'),3000); }
+function statusBadge(s) { return s === 'active' ? 'b-green' : s === 'pending' ? 'b-amber' : 'b-red'; }
+function fmtDate(s) { if (!s) return '—'; return new Date(s).toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'}); }
+function showToast(msg, cls) {
+  var t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast ' + (cls||'ts') + ' show';
+  setTimeout(function(){ t.className = 'toast'; }, 3000);
+}
 
 loadUsers();
 </script>
