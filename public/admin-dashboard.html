@@ -132,7 +132,7 @@ tr:hover td{background:#ffffff05}
 <div class="toast" id="toast"></div>
 
 <script>
-const API = 'http://localhost:5000/api';
+const API = 'https://transaction-monitoring-system-production.up.railway.app/api';
 const admin = JSON.parse(localStorage.getItem('tiq_user') || sessionStorage.getItem('tiq_user') || 'null');
 if (!admin || admin.role !== 'admin') { window.location.href = '/TransactIQ_Login_Simple.html'; }
 document.getElementById('adminName').textContent = admin?.fullName || 'Admin';
