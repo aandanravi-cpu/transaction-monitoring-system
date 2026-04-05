@@ -152,7 +152,12 @@ function loadUsers() {
     }
   })
   .catch(function(e) {
-    showOverviewErr('Server connection failed. Make sure Railway is running.');
+    if (e.message && e.message.includes('401')) {
+      localStorage.clear();
+      sessionStorage.clear();
+      window.location.href = '/TransactIQ_Login_Simple.html';
+    }
+    showOverviewErr('Could not load users: ' + e.message);
   });
 }
 

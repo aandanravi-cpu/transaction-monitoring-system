@@ -10,6 +10,7 @@ const transactionRoutes = require('./routes/transaction.routes');
 const { testDBConnection } = require('./config/db.config');
 const app = express();
 app.set('trust proxy', 1);
+app.set('trust proxy', 1);
 const PORT = process.env.PORT || 5000;
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors({ origin: '*' }));
